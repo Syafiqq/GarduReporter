@@ -83,10 +83,15 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
         this.mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(30000); //5 seconds
         mLocationRequest.setFastestInterval(30000); //3 seconds
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        //mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
 
         locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
+        Bundle bundle = new Bundle();
+        locationManager.sendExtraCommand("gps", "force_xtra_injection", bundle);
+        locationManager.sendExtraCommand("gps", "force_time_injection", bundle);
 
         if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
@@ -181,7 +186,7 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
             }
         }
 
-
+        LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
     }
 
     public void onProviderDisabled(String provider)
