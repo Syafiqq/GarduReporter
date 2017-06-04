@@ -10,4 +10,10 @@
     tools:context="app.freelancer.syafiqq.gardureporter.controller.Dashboard"
     tools:showIn="@layout/activity_dashboard">
 
+    <Button
+        android:id="@+id/content_dashboard_button_get_loc"
+        style="@android:style/Widget.DeviceDefault.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""/>
 </LinearLayout>
