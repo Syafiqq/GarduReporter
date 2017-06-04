@@ -1,247 +1,294 @@
 package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
-import android.content.IntentSender;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.ErrorDialogFragment;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
+import com.google.gson.Gson;
 
+import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
+import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
+import timber.log.Timber;
 
-public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleApiClient.ConnectionCallbacks
+public class Dashboard extends AppCompatActivity
 {
-    // Request code to use when launching the resolution activity
-    private static final int REQUEST_RESOLVE_ERROR = 1001;
-    // Unique tag for the error dialog fragment
-    private static final String DIALOG_ERROR = "dialog_error";
-    // Bool to track whether the app is already resolving an error
-    private boolean mResolvingError = false;
-    private GoogleApiClient mGoogleApiClient;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
-    private double latitude;
-    private double longitude;
-    private LocationRequest mLocationRequest;
+    private static final String TAG = Dashboard.class.getSimpleName();
 
-    public static boolean isInternetConnected(Context ctx)
+    // Used in checking for runtime permissions.
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 0x22;
+
+    // The BroadcastReceiver used to listen from broadcasts from the service.
+    private GPSReceiver gpsReceiver;
+
+    // A reference to the service used to get location updates.
+    private LocationService locationService = null;
+
+    // Tracks the bound state of the service.
+    // Monitors the state of the connection to the service.
+    private final ServiceConnection serviceConnection = new ServiceConnection()
     {
-        ConnectivityManager connectivityMgr = (ConnectivityManager) ctx
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifi = connectivityMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        NetworkInfo mobile = connectivityMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        // Check if wifi or mobile network is available or not. If any of them is
-        // available or connected then it will return true, otherwise false;
-        if(wifi != null)
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service)
         {
-            if(wifi.isConnected())
-            {
-                return true;
-            }
+            final LocationService.LocalBinder binder = (LocationService.LocalBinder) service;
+            Dashboard.this.locationService = binder.getService();
         }
-        if(mobile != null)
+
+        @Override
+        public void onServiceDisconnected(ComponentName name)
         {
-            if(mobile.isConnected())
-            {
-                return true;
-            }
+            Dashboard.this.locationService = null;
         }
-        return false;
-    }
+    };
+    // UI
+    private TextInputEditText substation;
+    private TextInputEditText voltage;
+    private TextInputEditText current;
+    private Button submit;
+    //DAO
+    private SubStationReport report;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Timber.d("onCreate");
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dashboard);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        Timber.plant(new Timber.DebugTree());
 
-        this.mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .setAccountName("syafiq.rezpector@gmail.com")
-                .build();
+        super.setContentView(R.layout.activity_dashboard);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar_toolbar);
+        super.setSupportActionBar(toolbar);
 
-        this.mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(30000); //5 seconds
-        mLocationRequest.setFastestInterval(30000); //3 seconds
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
+        this.gpsReceiver = new GPSReceiver();
+        this.report = new SubStationReport();
 
-        locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        locationManager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
-        Bundle bundle = new Bundle();
-        locationManager.sendExtraCommand("gps", "force_xtra_injection", bundle);
-        locationManager.sendExtraCommand("gps", "force_time_injection", bundle);
-
-        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if(!checkPermissions())
         {
-            return;
+            requestPermissions();
         }
-        this.locationListener = new LocationListener()
-        {
-            @Override
-            public void onLocationChanged(Location location)
-            {
-                Dashboard.this.onLocationChanged(location);
-            }
-        };
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult result)
-    {
-        if(mResolvingError)
-        {
-            // Already attempting to resolve an error.
-            return;
-        }
-        else if(result.hasResolution())
-        {
-            try
-            {
-                mResolvingError = true;
-                result.startResolutionForResult(this, REQUEST_RESOLVE_ERROR);
-            }
-            catch(IntentSender.SendIntentException e)
-            {
-                // There was an error with the resolution intent. Try again.
-                mGoogleApiClient.connect();
-            }
-        }
-        else
-        {
-            // Show dialog using GoogleApiAvailability.getErrorDialog()
-            showErrorDialog(result.getErrorCode());
-            mResolvingError = true;
-        }
-    }
-
-    private void showErrorDialog(int errorCode)
-    {
-        // Create a fragment for the error dialog
-        ErrorDialogFragment dialogFragment = new ErrorDialogFragment();
-        // Pass the error that should be displayed
-        Bundle args = new Bundle();
-        args.putInt(DIALOG_ERROR, errorCode);
-        dialogFragment.setArguments(args);
-        dialogFragment.show(super.getFragmentManager(), "errordialog");
-    }
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        if(isGPSEnabled(this))
-        {
-            if(locationListener != null)
-            {
-                if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                {
-                    return;
-                }
-
-                if(locationManager != null)
-                {
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if(location != null)
-                    {
-                        Dashboard.this.latitude = location.getLatitude();
-                        Dashboard.this.longitude = location.getLongitude();
-                        Log.d("Dashboard", "GPS Your Location is - \nLat: " + latitude + "\nLong: " + longitude);
-                    }
-                }
-            }
-        }
-
-        if(isInternetConnected(this))
-        {
-            if(locationManager != null)
-            {
-                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                if(location != null)
-                {
-                    Dashboard.this.latitude = location.getLatitude();
-                    Dashboard.this.longitude = location.getLongitude();
-                    Log.d("Dashboard", "Network Your Location is - \nLat: " + latitude + "\nLong: " + longitude);
-                }
-            }
-        }
-
-        LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
-    }
-
-    public void onProviderDisabled(String provider)
-    {
-
-    }
-
-    public void onProviderEnabled(String provider)
-    {
-
-    }
-
-    public void onStatusChanged(String provider, int status, Bundle extras)
-    {
-
-    }
-
     protected void onStart()
     {
-        mGoogleApiClient.connect();
+        Timber.d("onStart");
+
         super.onStart();
+        this.substation = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_substation);
+        this.voltage = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_voltage);
+        this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_current);
+        this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
+
+        this.submit.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                final SubStationReport report = Dashboard.this.report;
+                report.setSubstation(Dashboard.this.substation.getText().toString());
+                report.setVoltage(Double.parseDouble(Dashboard.this.voltage.getText().toString()));
+                report.setCurrent(Double.parseDouble(Dashboard.this.current.getText().toString()));
+                if(!checkPermissions())
+                {
+                    requestPermissions();
+                }
+                else
+                {
+                    Dashboard.this.locationService.requestLocationUpdates();
+                }
+            }
+        });
+        this.submit.setEnabled(this.checkPermissions());
+
+        super.bindService(new Intent(this, LocationService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    protected void onResume()
+    {
+        Timber.d("onResume");
+
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(this.gpsReceiver, new IntentFilter(LocationService.ACTION_BROADCAST));
+    }
+
+    @Override
+    protected void onPause()
+    {
+        Timber.d("onPause");
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.gpsReceiver);
+        super.onPause();
+    }
+
+    @Override
     protected void onStop()
     {
-        mGoogleApiClient.disconnect();
+        Timber.d("onStop");
+
+        super.unbindService(this.serviceConnection);
         super.onStop();
     }
 
-    public boolean isGPSEnabled(Context mContext)
+    /*
+     * Returns the current state of the permissions needed.
+     */
+    private boolean checkPermissions()
     {
-        LocationManager locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        Timber.d("checkPermissions");
+
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle)
+    private void requestPermissions()
     {
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        Timber.d("requestPermissions");
+
+        final boolean shouldProvideRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+        /* Provide an additional rationale to the user. This would happen if the user denied the
+         request previously, but didn't check the "Don't ask again" checkbox.*/
+        if(shouldProvideRationale)
         {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+            Timber.i(TAG, "Displaying permission rationale to provide additional context.");
+            Snackbar.make(
+                    findViewById(R.id.activity_dashboard_root),
+                    R.string.permission_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.command_ok, new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            // Request permission
+                            ActivityCompat.requestPermissions(Dashboard.this,
+                                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
+                    })
+                    .show();
         }
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this.locationListener);
+        else
+        {
+            Timber.i(TAG, "Requesting permission");
+            /* Request permission. It's possible this can be auto answered if device policy
+             sets the permission in a given state or the user denied the permission
+             previously and checked "Never ask again".*/
+            ActivityCompat.requestPermissions(Dashboard.this,
+                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
     }
 
+    /*
+     * Callback received when a permissions request has been completed.
+     */
     @Override
-    public void onConnectionSuspended(int i)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
+        Timber.d("onRequestPermissionsResult");
 
+        if(requestCode == REQUEST_PERMISSIONS_REQUEST_CODE)
+        {
+            if(grantResults.length <= 0)
+            {
+                // If user interaction was interrupted, the permission request is cancelled and you
+                // receive empty arrays.
+                Timber.i(TAG, "User interaction was cancelled.");
+            }
+            else if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                // Permission was granted.
+                this.locationService.requestLocationUpdates();
+            }
+            else
+            {
+                // Permission denied.
+                Snackbar.make(
+                        findViewById(R.id.activity_dashboard_root),
+                        R.string.permission_denied_explanation,
+                        Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.command_setting, new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View view)
+                            {
+                                // Build intent that displays the App settings screen.
+                                Intent intent = new Intent();
+                                intent.setAction(
+                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package",
+                                        BuildConfig.APPLICATION_ID, null);
+                                intent.setData(uri);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        })
+                        .show();
+            }
+            this.submit.setEnabled(this.checkPermissions());
+        }
+    }
+
+    private void doSubmit(SubStationReport report)
+    {
+        Timber.d("doSumbit");
+
+        final Gson gson = new Gson();
+        Timber.d("%s", gson.toJson(report));
+    }
+
+    private final class GPSReceiver extends BroadcastReceiver
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            Timber.d("onReceive");
+
+            final Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
+            if(location != null)
+            {
+                Timber.d("Lat=[%g], Lgt=[%g]", location.getLatitude(), location.getLongitude());
+                Timber.d("Location=[%.16g %.16g]", location.getLatitude(), location.getLongitude());
+
+                final SubStationReport report = Dashboard.this.report;
+                if(report.getLocation() == null)
+                {
+                    report.setLocation(new app.freelancer.syafiqq.gardureporter.model.dao.Location(0., 0.));
+                }
+
+                final app.freelancer.syafiqq.gardureporter.model.dao.Location reportLocation = report.getLocation();
+                if(reportLocation != null)
+                {
+                    reportLocation.setLatitude(location.getLatitude());
+                    reportLocation.setLongitude(location.getLongitude());
+                }
+                Dashboard.this.doSubmit(Dashboard.this.report);
+
+                Dashboard.this.locationService.removeLocationUpdates();
+            }
+        }
     }
 }
