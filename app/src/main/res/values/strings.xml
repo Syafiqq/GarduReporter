@@ -1,4 +1,12 @@
 <resources>
-    <string name="app_name">GarduReporter</string>
-    <string name="title_activity_dashboard">Dashboard</string>
+    <string name="application_name">Sub-Station Reporter</string>
+    <string name="activity_dashboard_title">Dashboard</string>
+    <string name="content_dashboard_textview_substation">Sub-Station</string>
+    <string name="content_dashboard_textview_voltage">Voltage</string>
+    <string name="content_dashboard_textview_current">Current</string>
+    <string name="content_dashboard_button_submit">Submit</string>
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
+    <string name="command_ok">OK</string>
+    <string name="command_setting">Setting</string>
 </resources>
