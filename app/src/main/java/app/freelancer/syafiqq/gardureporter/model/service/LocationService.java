@@ -8,6 +8,7 @@ package app.freelancer.syafiqq.gardureporter.model.service;
   Github       : syafiqq
  */
 
+import android.Manifest;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -262,18 +263,17 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         this.location = location;
         if(LocationService.isGPSEnabled(this))
         {
-            if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            if(this.checkPermissions() && (this.locationManager != null))
             {
-                if(this.locationManager != null)
-                {
-                    this.location = this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                }
+                //noinspection MissingPermission
+                this.location = this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             }
         }
         else if(LocationService.isInternetConnected(this))
         {
-            if(this.locationManager != null)
+            if(this.checkPermissions() && (this.locationManager != null))
             {
+                //noinspection MissingPermission
                 this.location = this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             }
         }
@@ -295,6 +295,13 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         this.locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         this.locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         this.locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private boolean checkPermissions()
+    {
+        Timber.d("checkPermissions");
+
+        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     /**
