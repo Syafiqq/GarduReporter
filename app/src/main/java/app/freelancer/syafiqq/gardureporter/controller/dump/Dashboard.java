@@ -1,4 +1,4 @@
-package app.freelancer.syafiqq.gardureporter.model.service;
+package app.freelancer.syafiqq.gardureporter.controller.dump;
 
 import android.Manifest;
 import android.content.Context;
@@ -9,8 +9,6 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,6 +21,9 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import app.freelancer.syafiqq.gardureporter.R;
 
 public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleApiClient.ConnectionCallbacks
@@ -32,37 +33,21 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
     // Unique tag for the error dialog fragment
     private static final String DIALOG_ERROR = "dialog_error";
     // Bool to track whether the app is already resolving an error
-    private boolean mResolvingError = false;
-    private GoogleApiClient mGoogleApiClient;
+    private boolean error = false;
+    private GoogleApiClient googleApi;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private double latitude;
     private double longitude;
-    private LocationRequest mLocationRequest;
+    private LocationRequest locationRequest;
 
     public static boolean isInternetConnected(Context ctx)
     {
-        ConnectivityManager connectivityMgr = (ConnectivityManager) ctx
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifi = connectivityMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        NetworkInfo mobile = connectivityMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        // Check if wifi or mobile network is available or not. If any of them is
-        // available or connected then it will return true, otherwise false;
-        if(wifi != null)
-        {
-            if(wifi.isConnected())
-            {
-                return true;
-            }
-        }
-        if(mobile != null)
-        {
-            if(mobile.isConnected())
-            {
-                return true;
-            }
-        }
-        return false;
+        final ConnectivityManager manager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        @Nullable
+        final NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+        return activeNetwork != null && (activeNetwork.getState() == NetworkInfo.State.CONNECTED || activeNetwork.getState() == NetworkInfo.State.CONNECTING);
     }
 
     @Override
@@ -70,24 +55,22 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar_toolbar);
         setSupportActionBar(toolbar);
 
-        this.mGoogleApiClient = new GoogleApiClient.Builder(this)
+        this.googleApi = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
-                .setAccountName("syafiq.rezpector@gmail.com")
                 .build();
 
-        this.mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(30000); //5 seconds
-        mLocationRequest.setFastestInterval(30000); //3 seconds
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
+        this.locationRequest = new LocationRequest();
+        locationRequest.setInterval(30000); //5 seconds
+        locationRequest.setFastestInterval(30000); //3 seconds
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setSmallestDisplacement(0.1F); //1/10 meter
 
         locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         locationManager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
         Bundle bundle = new Bundle();
         locationManager.sendExtraCommand("gps", "force_xtra_injection", bundle);
@@ -97,42 +80,32 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
         {
             return;
         }
-        this.locationListener = new LocationListener()
-        {
-            @Override
-            public void onLocationChanged(Location location)
-            {
-                Dashboard.this.onLocationChanged(location);
-            }
-        };
+        this.locationListener = this;
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult result)
+    public void onConnectionFailed(@NotNull ConnectionResult result)
     {
-        if(mResolvingError)
+        if(!this.error)
         {
-            // Already attempting to resolve an error.
-            return;
-        }
-        else if(result.hasResolution())
-        {
-            try
+            if(result.hasResolution())
             {
-                mResolvingError = true;
-                result.startResolutionForResult(this, REQUEST_RESOLVE_ERROR);
+                try
+                {
+                    this.error = true;
+                    result.startResolutionForResult(this, REQUEST_RESOLVE_ERROR);
+                }
+                catch(IntentSender.SendIntentException e)
+                {
+                    this.googleApi.connect();
+                }
             }
-            catch(IntentSender.SendIntentException e)
+            else
             {
-                // There was an error with the resolution intent. Try again.
-                mGoogleApiClient.connect();
+                // Show dialog using GoogleApiAvailability.getErrorDialog()
+                showErrorDialog(result.getErrorCode());
+                error = true;
             }
-        }
-        else
-        {
-            // Show dialog using GoogleApiAvailability.getErrorDialog()
-            showErrorDialog(result.getErrorCode());
-            mResolvingError = true;
         }
     }
 
@@ -185,34 +158,17 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
                 }
             }
         }
-
-        LocationServices.FusedLocationApi.removeLocationUpdates(this.mGoogleApiClient, this);
-    }
-
-    public void onProviderDisabled(String provider)
-    {
-
-    }
-
-    public void onProviderEnabled(String provider)
-    {
-
-    }
-
-    public void onStatusChanged(String provider, int status, Bundle extras)
-    {
-
     }
 
     protected void onStart()
     {
-        mGoogleApiClient.connect();
+        this.googleApi.connect();
         super.onStart();
     }
 
     protected void onStop()
     {
-        mGoogleApiClient.disconnect();
+        this.googleApi.disconnect();
         super.onStop();
     }
 
@@ -227,16 +183,9 @@ public class Dashboard extends AppCompatActivity implements GoogleApiClient.OnCo
     {
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this.locationListener);
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApi, locationRequest, this.locationListener);
     }
 
     @Override
