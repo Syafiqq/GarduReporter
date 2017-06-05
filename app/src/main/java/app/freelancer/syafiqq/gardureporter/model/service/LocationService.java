@@ -9,14 +9,19 @@ package app.freelancer.syafiqq.gardureporter.model.service;
  */
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -28,7 +33,6 @@ import com.google.android.gms.location.LocationServices;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import app.freelancer.syafiqq.gardureporter.model.util.Utils;
 import timber.log.Timber;
 
 /**
@@ -78,6 +82,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
      * Contains parameters used by {@link com.google.android.gms.location.FusedLocationProviderApi}.
      */
     private LocationRequest locationRequest;
+    private LocationManager locationManager;
 
     private Handler serviceHandler;
 
@@ -88,6 +93,23 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     public LocationService()
     {
+    }
+
+    public static boolean isGPSEnabled(Context ctx)
+    {
+        @NotNull
+        final LocationManager locationManager = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    public static boolean isInternetConnected(Context ctx)
+    {
+        @NotNull
+        final ConnectivityManager manager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        @Nullable
+        final NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+        return activeNetwork != null && (activeNetwork.getState() == NetworkInfo.State.CONNECTED || activeNetwork.getState() == NetworkInfo.State.CONNECTING);
     }
 
     @Override
@@ -102,10 +124,16 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                 .build();
         this.apiClient.connect();
         this.createLocationRequest();
+        this.createLocationManager();
 
         final HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         this.serviceHandler = new Handler(handlerThread.getLooper());
+    }
+
+    private void createLocationManager()
+    {
+        this.locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
     }
 
     @Override
@@ -118,14 +146,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig)
-    {
-        Timber.d("onConfigurationChanged");
-
-        super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
     public IBinder onBind(Intent intent)
     {
         // Called when a client (MainActivity in case of this sample) comes to the foreground
@@ -134,7 +154,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         Timber.d("onBind");
 
         super.stopForeground(true);
-        return mBinder;
+        return this.mBinder;
     }
 
     @Override
@@ -147,14 +167,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
         super.stopForeground(true);
         super.onRebind(intent);
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent)
-    {
-        Timber.d("onUnbind");
-
-        return true; // Ensures onRebind() is called when a client re-binds.
     }
 
     @Override
@@ -174,7 +186,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     {
         Timber.d("requestLocationUpdates");
 
-        Utils.setRequestingLocationUpdates(this, true);
+        this.resetGPS();
         this.startService(new Intent(getApplicationContext(), LocationService.class));
         try
         {
@@ -182,9 +194,16 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         }
         catch(SecurityException unlikely)
         {
-            Utils.setRequestingLocationUpdates(this, false);
             Timber.e("Lost location permission. Could not request updates. " + unlikely);
         }
+    }
+
+    private void resetGPS()
+    {
+        locationManager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
+        Bundle bundle = new Bundle();
+        locationManager.sendExtraCommand("gps", "force_xtra_injection", bundle);
+        locationManager.sendExtraCommand("gps", "force_time_injection", bundle);
     }
 
     /**
@@ -198,16 +217,13 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         try
         {
             LocationServices.FusedLocationApi.removeLocationUpdates(this.apiClient, LocationService.this);
-            Utils.setRequestingLocationUpdates(this, false);
             super.stopSelf();
         }
         catch(SecurityException unlikely)
         {
-            Utils.setRequestingLocationUpdates(this, true);
             Timber.e("Lost location permission. Could not remove updates. " + unlikely);
         }
     }
-
 
     @Override
     public void onConnected(@Nullable Bundle bundle)
@@ -244,10 +260,27 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         Timber.d("onLocationChanged");
 
         this.location = location;
+        if(LocationService.isGPSEnabled(this))
+        {
+            if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            {
+                if(this.locationManager != null)
+                {
+                    this.location = this.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                }
+            }
+        }
+        else if(LocationService.isInternetConnected(this))
+        {
+            if(this.locationManager != null)
+            {
+                this.location = this.locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            }
+        }
 
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
-        intent.putExtra(EXTRA_LOCATION, location);
+        intent.putExtra(EXTRA_LOCATION, this.location);
         LocalBroadcastManager.getInstance(super.getApplicationContext()).sendBroadcast(intent);
     }
 
