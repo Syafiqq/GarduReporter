@@ -1,17 +1,14 @@
 package app.freelancer.syafiqq.gardureporter.model.service;
 
-/**
- * This <GarduReporter> project created by :
- * Name         : syafiq
- * Date / Time  : 04 June 2017, 2:34 PM.
- * Email        : syafiq.rezpector@gmail.com
- * Github       : syafiqq
+/*
+  This <GarduReporter> project created by :
+  Name         : syafiq
+  Date / Time  : 04 June 2017, 2:34 PM.
+  Email        : syafiq.rezpector@gmail.com
+  Github       : syafiqq
  */
 
-import android.app.ActivityManager;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.location.Location;
@@ -20,8 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -29,6 +24,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import app.freelancer.syafiqq.gardureporter.model.util.Utils;
 import timber.log.Timber;
@@ -48,56 +46,45 @@ import timber.log.Timber;
  * notification assocaited with that service is removed.
  */
 public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks,
-                                                        GoogleApiClient.OnConnectionFailedListener, LocationListener
+                                                        GoogleApiClient.OnConnectionFailedListener,
+                                                        LocationListener
 {
-
-    private static final String PACKAGE_NAME =
-            "com.google.android.gms.location.sample.locationupdatesforegroundservice";
+    public static final String PACKAGE_NAME = LocationService.class.getPackage().getName();
     public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
     public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
+
     private static final String TAG = LocationService.class.getSimpleName();
-    private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
-            ".started_from_notification";
+
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 50000;
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
      * than this value.
      */
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 30000;
     /**
      * The identifier for the notification displayed for the foreground service.
      */
-    private static final int NOTIFICATION_ID = 12345678;
     private final IBinder mBinder = new LocalBinder();
-    /**
-     * Used to check whether the bound activity has really gone away and not unbound as part of an
-     * orientation change. We create a foreground service notification only if the former takes
-     * place.
-     */
-    private boolean mChangingConfiguration = false;
-
-    private NotificationManager mNotificationManager;
 
     /**
      * The entry point to Google Play Services.
      */
-    private GoogleApiClient mGoogleApiClient;
+    private GoogleApiClient apiClient;
 
     /**
      * Contains parameters used by {@link com.google.android.gms.location.FusedLocationProviderApi}.
      */
-    private LocationRequest mLocationRequest;
+    private LocationRequest locationRequest;
 
-    private Handler mServiceHandler;
+    private Handler serviceHandler;
 
     /**
      * The current location.
      */
-    private Location mLocation;
+    private Location location;
 
     public LocationService()
     {
@@ -106,33 +93,26 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onCreate()
     {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        Timber.d("onCreate");
+
+        this.apiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-        mGoogleApiClient.connect();
-        createLocationRequest();
+        this.apiClient.connect();
+        this.createLocationRequest();
 
-        HandlerThread handlerThread = new HandlerThread(TAG);
+        final HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
-        mServiceHandler = new Handler(handlerThread.getLooper());
-        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        this.serviceHandler = new Handler(handlerThread.getLooper());
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Timber.i(TAG, "Service started");
-        boolean startedFromNotification = intent.getBooleanExtra(EXTRA_STARTED_FROM_NOTIFICATION,
-                false);
+        Timber.d("onStartCommand");
 
-        // We got here because the user decided to remove location updates from the notification.
-        if(startedFromNotification)
-        {
-            removeLocationUpdates();
-            stopSelf();
-        }
         // Tells the system to not try to recreate the service after it has been killed.
         return START_NOT_STICKY;
     }
@@ -140,8 +120,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onConfigurationChanged(Configuration newConfig)
     {
+        Timber.d("onConfigurationChanged");
+
         super.onConfigurationChanged(newConfig);
-        mChangingConfiguration = true;
     }
 
     @Override
@@ -150,9 +131,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         // Called when a client (MainActivity in case of this sample) comes to the foreground
         // and binds with this service. The service should cease to be a foreground service
         // when that happens.
-        Timber.i(TAG, "in onBind()");
-        stopForeground(true);
-        mChangingConfiguration = false;
+        Timber.d("onBind");
+
+        super.stopForeground(true);
         return mBinder;
     }
 
@@ -162,41 +143,27 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         // Called when a client (MainActivity in case of this sample) returns to the foreground
         // and binds once again with this service. The service should cease to be a foreground
         // service when that happens.
-        Timber.i(TAG, "in onRebind()");
-        stopForeground(true);
-        mChangingConfiguration = false;
+        Timber.d("onRebind");
+
+        super.stopForeground(true);
         super.onRebind(intent);
     }
 
     @Override
     public boolean onUnbind(Intent intent)
     {
-        Timber.i(TAG, "Last client unbound from service");
+        Timber.d("onUnbind");
 
-        // Called when the last client (MainActivity in case of this sample) unbinds from this
-        // service. If this method is called due to a configuration change in MainActivity, we
-        // do nothing. Otherwise, we make this service a foreground service.
-        if(!mChangingConfiguration && Utils.requestingLocationUpdates(this))
-        {
-            Timber.i(TAG, "Starting foreground service");
-            /*
-            // TODO(developer). If targeting O, use the following code.
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
-                mNotificationManager.startServiceInForeground(new Intent(this,
-                        LocationService.class), NOTIFICATION_ID, getNotification());
-            } else {
-                startForeground(NOTIFICATION_ID, getNotification());
-            }
-             */
-        }
         return true; // Ensures onRebind() is called when a client re-binds.
     }
 
     @Override
     public void onDestroy()
     {
-        mServiceHandler.removeCallbacksAndMessages(null);
-        mGoogleApiClient.disconnect();
+        Timber.d("onDestroy");
+
+        this.serviceHandler.removeCallbacksAndMessages(null);
+        this.apiClient.disconnect();
     }
 
     /**
@@ -205,18 +172,18 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
      */
     public void requestLocationUpdates()
     {
-        Timber.i(TAG, "Requesting location updates");
+        Timber.d("requestLocationUpdates");
+
         Utils.setRequestingLocationUpdates(this, true);
         this.startService(new Intent(getApplicationContext(), LocationService.class));
         try
         {
-            LocationServices.FusedLocationApi.requestLocationUpdates(
-                    mGoogleApiClient, mLocationRequest, LocationService.this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(this.apiClient, this.locationRequest, LocationService.this);
         }
         catch(SecurityException unlikely)
         {
             Utils.setRequestingLocationUpdates(this, false);
-            Timber.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
+            Timber.e("Lost location permission. Could not request updates. " + unlikely);
         }
     }
 
@@ -226,18 +193,18 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
      */
     public void removeLocationUpdates()
     {
-        Timber.i(TAG, "Removing location updates");
+        Timber.d("removeLocationUpdates");
+
         try
         {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
-                    LocationService.this);
+            LocationServices.FusedLocationApi.removeLocationUpdates(this.apiClient, LocationService.this);
             Utils.setRequestingLocationUpdates(this, false);
-            stopSelf();
+            super.stopSelf();
         }
         catch(SecurityException unlikely)
         {
             Utils.setRequestingLocationUpdates(this, true);
-            Timber.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+            Timber.e("Lost location permission. Could not remove updates. " + unlikely);
         }
     }
 
@@ -245,14 +212,15 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     @Override
     public void onConnected(@Nullable Bundle bundle)
     {
-        Timber.i(TAG, "GoogleApiClient connected");
+        Timber.d("onConnected");
+
         try
         {
-            mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            this.location = LocationServices.FusedLocationApi.getLastLocation(this.apiClient);
         }
         catch(SecurityException unlikely)
         {
-            Timber.e(TAG, "Lost location permission." + unlikely);
+            Timber.e("Lost location permission." + unlikely);
         }
     }
 
@@ -260,27 +228,27 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     public void onConnectionSuspended(int i)
     {
         // In this example, we merely log the suspension.
-        Timber.e(TAG, "GoogleApiClient connection suspended.");
+        Timber.e("GoogleApiClient connection suspended.");
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+    public void onConnectionFailed(@NotNull ConnectionResult connectionResult)
     {
         // In this example, we merely log the failure.
-        Timber.e(TAG, "GoogleApiClient connection failed.");
+        Timber.e("GoogleApiClient connection failed.");
     }
 
     @Override
     public void onLocationChanged(Location location)
     {
-        Timber.i(TAG, "New location: " + location);
+        Timber.d("onLocationChanged");
 
-        mLocation = location;
+        this.location = location;
 
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
         intent.putExtra(EXTRA_LOCATION, location);
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(super.getApplicationContext()).sendBroadcast(intent);
     }
 
     /**
@@ -288,33 +256,12 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
      */
     private void createLocationRequest()
     {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
+        Timber.d("createLocationRequest");
 
-    /**
-     * Returns true if this is a foreground service.
-     *
-     * @param context The {@link Context}.
-     */
-    public boolean serviceIsRunningInForeground(Context context)
-    {
-        ActivityManager manager = (ActivityManager) context.getSystemService(
-                Context.ACTIVITY_SERVICE);
-        for(ActivityManager.RunningServiceInfo service : manager.getRunningServices(
-                Integer.MAX_VALUE))
-        {
-            if(getClass().getName().equals(service.service.getClassName()))
-            {
-                if(service.foreground)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        this.locationRequest = new LocationRequest();
+        this.locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+        this.locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        this.locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     /**
@@ -325,6 +272,8 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     {
         public LocationService getService()
         {
+            Timber.d("getService");
+
             return LocationService.this;
         }
     }
