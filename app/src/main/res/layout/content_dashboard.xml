@@ -37,7 +37,8 @@
             android:id="@+id/content_dashboard_edittext_voltage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/content_dashboard_textview_voltage"/>
+            android:hint="@string/content_dashboard_textview_voltage"
+            android:inputType="numberDecimal"/>
 
     </android.support.design.widget.TextInputLayout>
 
@@ -49,7 +50,8 @@
             android:id="@+id/content_dashboard_edittext_current"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/content_dashboard_textview_current"/>
+            android:hint="@string/content_dashboard_textview_current"
+            android:inputType="numberDecimal"/>
 
     </android.support.design.widget.TextInputLayout>
 
