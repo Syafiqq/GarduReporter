@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
@@ -25,13 +24,15 @@ import android.widget.Button;
 
 import com.google.gson.Gson;
 
+import org.jetbrains.annotations.NotNull;
+
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
 import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
 import timber.log.Timber;
 
-public class Dashboard extends AppCompatActivity
+public class Dashboard extends AppCompatActivity implements View.OnClickListener
 {
     private static final String TAG = Dashboard.class.getSimpleName();
 
@@ -72,11 +73,10 @@ public class Dashboard extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Timber.plant(new Timber.DebugTree());
         Timber.d("onCreate");
 
         super.onCreate(savedInstanceState);
-        Timber.plant(new Timber.DebugTree());
-
         super.setContentView(R.layout.activity_dashboard);
         final Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar_toolbar);
         super.setSupportActionBar(toolbar);
@@ -101,25 +101,7 @@ public class Dashboard extends AppCompatActivity
         this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_current);
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
 
-        this.submit.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                final SubStationReport report = Dashboard.this.report;
-                report.setSubstation(Dashboard.this.substation.getText().toString());
-                report.setVoltage(Double.parseDouble(Dashboard.this.voltage.getText().toString()));
-                report.setCurrent(Double.parseDouble(Dashboard.this.current.getText().toString()));
-                if(!checkPermissions())
-                {
-                    requestPermissions();
-                }
-                else
-                {
-                    Dashboard.this.locationService.requestLocationUpdates();
-                }
-            }
-        });
+        this.submit.setOnClickListener(this);
         this.submit.setEnabled(this.checkPermissions());
 
         super.bindService(new Intent(this, LocationService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
@@ -177,16 +159,12 @@ public class Dashboard extends AppCompatActivity
                     findViewById(R.id.activity_dashboard_root),
                     R.string.permission_rationale,
                     Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.command_ok, new View.OnClickListener()
+                    .setAction(R.string.command_ok, view ->
                     {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            // Request permission
-                            ActivityCompat.requestPermissions(Dashboard.this,
-                                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
-                                    REQUEST_PERMISSIONS_REQUEST_CODE);
-                        }
+                        // Request permission
+                        ActivityCompat.requestPermissions(Dashboard.this,
+                                new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                                REQUEST_PERMISSIONS_REQUEST_CODE);
                     })
                     .show();
         }
@@ -206,7 +184,7 @@ public class Dashboard extends AppCompatActivity
      * Callback received when a permissions request has been completed.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults)
     {
         Timber.d("onRequestPermissionsResult");
 
@@ -230,21 +208,17 @@ public class Dashboard extends AppCompatActivity
                         findViewById(R.id.activity_dashboard_root),
                         R.string.permission_denied_explanation,
                         Snackbar.LENGTH_INDEFINITE)
-                        .setAction(R.string.command_setting, new View.OnClickListener()
+                        .setAction(R.string.command_setting, view ->
                         {
-                            @Override
-                            public void onClick(View view)
-                            {
-                                // Build intent that displays the App settings screen.
-                                Intent intent = new Intent();
-                                intent.setAction(
-                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                Uri uri = Uri.fromParts("package",
-                                        BuildConfig.APPLICATION_ID, null);
-                                intent.setData(uri);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                            }
+                            // Build intent that displays the App settings screen.
+                            Intent intent = new Intent();
+                            intent.setAction(
+                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            Uri uri = Uri.fromParts("package",
+                                    BuildConfig.APPLICATION_ID, null);
+                            intent.setData(uri);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
                         })
                         .show();
             }
@@ -260,6 +234,23 @@ public class Dashboard extends AppCompatActivity
         Timber.d("%s", gson.toJson(report));
     }
 
+    @Override
+    public void onClick(View v)
+    {
+        final SubStationReport report1 = this.report;
+        report1.setSubstation(this.substation.getText().toString());
+        report1.setVoltage(Double.parseDouble(this.voltage.getText().toString()));
+        report1.setCurrent(Double.parseDouble(this.current.getText().toString()));
+        if(!checkPermissions())
+        {
+            requestPermissions();
+        }
+        else
+        {
+            this.locationService.requestLocationUpdates();
+        }
+    }
+
     private final class GPSReceiver extends BroadcastReceiver
     {
         @Override
@@ -270,8 +261,7 @@ public class Dashboard extends AppCompatActivity
             final Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
             if(location != null)
             {
-                Timber.d("Lat=[%g], Lgt=[%g]", location.getLatitude(), location.getLongitude());
-                Timber.d("Location=[%.16g %.16g]", location.getLatitude(), location.getLongitude());
+                Timber.d("Location=[%g %g]", location.getLatitude(), location.getLongitude());
 
                 final SubStationReport report = Dashboard.this.report;
                 if(report.getLocation() == null)
