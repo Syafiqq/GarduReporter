@@ -21,15 +21,33 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
+import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
+import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import timber.log.Timber;
 
 public class Dashboard extends AppCompatActivity implements View.OnClickListener
@@ -69,6 +87,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private Button submit;
     //DAO
     private SubStationReport report;
+    private RequestQueue queue;
+    private String sendTag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -83,6 +103,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         this.gpsReceiver = new GPSReceiver();
         this.report = new SubStationReport();
+        this.sendTag = "REPORT_SEND";
 
         if(!checkPermissions())
         {
@@ -159,12 +180,15 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     findViewById(R.id.activity_dashboard_root),
                     R.string.permission_rationale,
                     Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.command_ok, view ->
+                    .setAction(R.string.command_ok, new View.OnClickListener()
                     {
-                        // Request permission
-                        ActivityCompat.requestPermissions(Dashboard.this,
-                                new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
-                                REQUEST_PERMISSIONS_REQUEST_CODE);
+                        @Override
+                        public void onClick(View view)
+                        {
+                            ActivityCompat.requestPermissions(Dashboard.this,
+                                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
                     })
                     .show();
         }
@@ -208,17 +232,21 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                         findViewById(R.id.activity_dashboard_root),
                         R.string.permission_denied_explanation,
                         Snackbar.LENGTH_INDEFINITE)
-                        .setAction(R.string.command_setting, view ->
+                        .setAction(R.string.command_setting, new View.OnClickListener()
                         {
-                            // Build intent that displays the App settings screen.
-                            Intent intent = new Intent();
-                            intent.setAction(
-                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            Uri uri = Uri.fromParts("package",
-                                    BuildConfig.APPLICATION_ID, null);
-                            intent.setData(uri);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
+                            @Override
+                            public void onClick(View view)
+                            {
+                                // Build intent that displays the App settings screen.
+                                Intent intent = new Intent();
+                                intent.setAction(
+                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package",
+                                        BuildConfig.APPLICATION_ID, null);
+                                intent.setData(uri);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
                         })
                         .show();
             }
@@ -231,7 +259,62 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         Timber.d("doSumbit");
 
         final Gson gson = new Gson();
-        Timber.d("%s", gson.toJson(report));
+        final String data = gson.toJson(report);
+
+        if(this.queue == null)
+        {
+            this.queue = Volley.newRequestQueue(this);
+        }
+        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/insert";
+
+        // Request a string response from the provided URL.
+        final RawJsonObjectRequest request = new RawJsonObjectRequest(
+                Request.Method.POST,
+                url,
+                data,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response)
+                    {
+                        Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        final NetworkResponse response = error.networkResponse;
+                        if (error instanceof ServerError && response != null)
+                        {
+                            try
+                            {
+                                final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                                final JSONObject obj = new JSONObject(res);
+
+                                Timber.i(obj.toString());
+                                Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_error_sending_to_server), Toast.LENGTH_SHORT).show();
+                            } catch (UnsupportedEncodingException | JSONException e1) {
+                                Timber.e(e1);
+                            }
+                        }
+                    }
+                }
+
+        ){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("X-Requested-With", "XMLHttpRequest");
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                return headers;
+            }
+        };
+        // Add the request to the RequestQueue.
+
+        request.setTag(this.sendTag);
+        this.queue.add(request);
     }
 
     @Override
