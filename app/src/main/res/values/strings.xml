@@ -9,4 +9,6 @@
     <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
     <string name="command_ok">OK</string>
     <string name="command_setting">Setting</string>
+    <string name="global_toast_error_sending_to_server">Error when sending data to server</string>
+    <string name="global_toast_success_sending_to_server">Data successfully send to server</string>
 </resources>
