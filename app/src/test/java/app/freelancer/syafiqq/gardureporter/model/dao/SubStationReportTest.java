@@ -1,9 +1,7 @@
 package app.freelancer.syafiqq.gardureporter.model.dao;
 
 import com.google.gson.Gson;
-
 import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
