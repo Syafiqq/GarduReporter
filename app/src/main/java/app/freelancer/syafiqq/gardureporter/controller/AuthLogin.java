@@ -15,9 +15,26 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
+import app.freelancer.syafiqq.gardureporter.model.util.Setting;
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.Volley;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONException;
+import org.json.JSONObject;
 import timber.log.Timber;
 
 /**
@@ -25,6 +42,7 @@ import timber.log.Timber;
  */
 public class AuthLogin extends AppCompatActivity
 {
+    private static final String API_AUTH_LOGIN = "api_auth_login";
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -52,8 +70,7 @@ public class AuthLogin extends AppCompatActivity
             {
                 if(id == R.id.activity_auth_login_button_form_submit || id == EditorInfo.IME_NULL)
                 {
-                    Timber.d("Login");
-                    //AuthLogin.this.attemptLogin();
+                    AuthLogin.this.attemptLogin();
                     return true;
                 }
                 return false;
@@ -105,7 +122,7 @@ public class AuthLogin extends AppCompatActivity
         }
 
         // Check for a valid password, if the user entered one.
-        if(this.isPasswordValid(password))
+        if(!this.isPasswordValid(password))
         {
             this.mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = this.mPasswordView;
@@ -187,11 +204,11 @@ public class AuthLogin extends AppCompatActivity
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    private class UserLoginTask extends AsyncTask<Void, Void, Boolean>
+    private class UserLoginTask extends AsyncTask<Void, Void, Void>
     {
-
         private final String mEmail;
         private final String mPassword;
+        private RequestQueue queue;
 
         UserLoginTask(String email, String password)
         {
@@ -200,22 +217,86 @@ public class AuthLogin extends AppCompatActivity
         }
 
         @Override
-        protected Boolean doInBackground(Void... params)
+        protected Void doInBackground(Void... params)
         {
+            Timber.d("doInBackground");
+
+            if(this.queue == null)
+            {
+                this.queue = Volley.newRequestQueue(AuthLogin.this);
+            }
+            String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/login";
+
+            final JSONObject entry = new JSONObject();
             try
             {
-                // Simulate network access.
-                Thread.sleep(2000);
+                entry.put("email", this.mEmail);
+                entry.put("password", this.mPassword);
+                entry.put("guard", Setting.getOurInstance().getNetworking().getGuard());
             }
-            catch(InterruptedException e)
+            catch(JSONException e)
             {
-                return false;
+                Timber.e(e);
             }
 
-            return true;
+            // Request a string response from the provided URL.
+            final RawJsonObjectRequest request = new RawJsonObjectRequest(
+                    Request.Method.POST,
+                    url,
+                    entry.toString(),
+                    new Response.Listener<JSONObject>()
+                    {
+                        @Override
+                        public void onResponse(JSONObject response)
+                        {
+                            Toast.makeText(AuthLogin.this, AuthLogin.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
+                            Timber.i(response.toString());
+                            UserLoginTask.this.onPostExecute(true);
+                        }
+                    },
+                    new Response.ErrorListener()
+                    {
+                        @Override
+                        public void onErrorResponse(VolleyError error)
+                        {
+                            final NetworkResponse response = error.networkResponse;
+                            if(error instanceof ServerError && response != null)
+                            {
+                                try
+                                {
+                                    final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                                    Timber.i(res);
+                                    Toast.makeText(AuthLogin.this, AuthLogin.super.getResources().getString(R.string.global_toast_error_sending_to_server), Toast.LENGTH_SHORT).show();
+                                }
+                                catch(UnsupportedEncodingException e1)
+                                {
+                                    Timber.e(e1);
+                                }
+                            }
+                            UserLoginTask.this.onPostExecute(false);
+                        }
+                    }
+
+            )
+            {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError
+                {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("X-Requested-With", "XMLHttpRequest");
+                    headers.put("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate());
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+                    return headers;
+                }
+            };
+            // Add the request to the RequestQueue.
+
+            request.setTag(API_AUTH_LOGIN);
+            this.queue.add(request);
+
+            return null;
         }
 
-        @Override
         protected void onPostExecute(final Boolean success)
         {
             AuthLogin.this.mAuthTask = null;
@@ -227,8 +308,9 @@ public class AuthLogin extends AppCompatActivity
             }
             else
             {
-                AuthLogin.this.mPasswordView.setError(getString(R.string.error_incorrect_password));
-                AuthLogin.this.mPasswordView.requestFocus();
+                AuthLogin.this.mEmailView.setError(getString(R.string.error_incorrect_login));
+                AuthLogin.this.mPasswordView.setError(getString(R.string.error_incorrect_login));
+                AuthLogin.this.mEmailView.requestFocus();
             }
         }
 
