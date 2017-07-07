@@ -10,15 +10,11 @@ import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
 public class SplashScreen extends AppCompatActivity
 {
-
     private static final int SECONDS_DELAYED = 2;
-
-    @Nullable private Setting setting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -26,14 +22,13 @@ public class SplashScreen extends AppCompatActivity
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_splash_screen);
 
-        this.setting = Setting.getOurInstance();
-
         this.initializeTimber();
         new AsyncTask<Void, Void, Void>()
         {
-            private final int NEED_AUTH = 0x00;
+            private final int BYPASS_AUTH = 0x01;
+            private final int NEED_AUTH = 0x02;
 
-            private int state = NEED_AUTH;
+            private int state = BYPASS_AUTH;
 
             @Override
             protected Void doInBackground(Void... voids)
@@ -57,13 +52,22 @@ public class SplashScreen extends AppCompatActivity
                 {
                     public void run()
                     {
-                        if(state == NEED_AUTH)
+                        @NotNull Intent intent;
+                        switch(state)
                         {
-                            @NotNull Intent intent = new Intent(SplashScreen.this, AuthLogin.class);
-                            intent.putExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
-                            SplashScreen.super.startActivity(intent);
-                            SplashScreen.super.finish();
+                            case NEED_AUTH:
+                            {
+                                intent = new Intent(SplashScreen.this, AuthLogin.class);
+                                intent.putExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
+                            }
+                            default:
+                            {
+                                intent = new Intent(SplashScreen.this, Dashboard.class);
+                            }
+                            break;
                         }
+                        SplashScreen.super.startActivity(intent);
+                        SplashScreen.super.finish();
                     }
                 }, SECONDS_DELAYED * 1000);
             }
