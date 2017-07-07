@@ -3,6 +3,8 @@ package app.freelancer.syafiqq.gardureporter.controller;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import timber.log.Timber;
@@ -53,12 +56,17 @@ public class AuthLogin extends AppCompatActivity
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private int jumper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_auth_login);
+
+        Intent intent = super.getIntent();
+        this.jumper = intent.getIntExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
+
         // Set up the login form.
         this.mEmailView = (EditText) findViewById(R.id.activity_auth_login_edit_text_form_email);
 
@@ -225,12 +233,12 @@ public class AuthLogin extends AppCompatActivity
             {
                 this.queue = Volley.newRequestQueue(AuthLogin.this);
             }
-            String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/login";
+            String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/login?lang=en";
 
             final JSONObject entry = new JSONObject();
             try
             {
-                entry.put("email", this.mEmail);
+                entry.put("identity", this.mEmail);
                 entry.put("password", this.mPassword);
                 entry.put("guard", Setting.getOurInstance().getNetworking().getGuard());
             }
@@ -249,9 +257,32 @@ public class AuthLogin extends AppCompatActivity
                         @Override
                         public void onResponse(JSONObject response)
                         {
-                            Toast.makeText(AuthLogin.this, AuthLogin.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
-                            Timber.i(response.toString());
-                            UserLoginTask.this.onPostExecute(true);
+                            String message = null;
+                            boolean success = false;
+                            try
+                            {
+                                JSONObject data = response.getJSONObject("data");
+                                int status = data.getInt("status");
+                                JSONArray messages = data.getJSONArray("message");
+                                message = messages.getString(0);
+                                if(status == 1)
+                                {
+                                    JSONObject tokens = data.getJSONObject("token");
+                                    String token = tokens.getString("token");
+                                    String refresh = tokens.getString("refresh");
+                                    SharedPreferences settings = getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = settings.edit();
+                                    editor.putString(AuthLogin.super.getResources().getString(R.string.shared_preferences_authentication_token), token);
+                                    editor.putString(AuthLogin.super.getResources().getString(R.string.shared_preferences_authentication_refresh), refresh);
+                                    editor.apply();
+                                    success = true;
+                                }
+                            }
+                            catch(JSONException e)
+                            {
+                                Timber.e(e);
+                            }
+                            UserLoginTask.this.onPostExecute(success, message);
                         }
                     },
                     new Response.ErrorListener()
@@ -265,7 +296,7 @@ public class AuthLogin extends AppCompatActivity
                                 try
                                 {
                                     final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                                    Timber.i(res);
+                                    Timber.e(res);
                                     Toast.makeText(AuthLogin.this, AuthLogin.super.getResources().getString(R.string.global_toast_error_sending_to_server), Toast.LENGTH_SHORT).show();
                                 }
                                 catch(UnsupportedEncodingException e1)
@@ -273,7 +304,7 @@ public class AuthLogin extends AppCompatActivity
                                     Timber.e(e1);
                                 }
                             }
-                            UserLoginTask.this.onPostExecute(false);
+                            UserLoginTask.this.onPostExecute(false, null);
                         }
                     }
 
@@ -297,14 +328,34 @@ public class AuthLogin extends AppCompatActivity
             return null;
         }
 
-        protected void onPostExecute(final Boolean success)
+        protected void onPostExecute(final Boolean success, final String message)
         {
             AuthLogin.this.mAuthTask = null;
             AuthLogin.this.showProgress(false);
 
+            if(message != null)
+            {
+                Toast.makeText(AuthLogin.this, message, Toast.LENGTH_SHORT).show();
+            }
+
             if(success)
             {
-                //AuthLogin.this.finish();
+                @Nullable Intent intent = null;
+                switch(AuthLogin.this.jumper)
+                {
+                    case Setting.Jumper.CLASS_DASHBOARD:
+                    {
+                        intent = new Intent(AuthLogin.this, Dashboard.class);
+                    }
+                    break;
+                    default:
+                    {
+                        intent = new Intent(AuthLogin.this, AuthLogin.class);
+                    }
+                    break;
+                }
+                AuthLogin.super.startActivity(intent);
+                AuthLogin.super.finish();
             }
             else
             {
