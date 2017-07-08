@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -22,7 +23,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
+import app.freelancer.syafiqq.gardureporter.BuildConfig;
+import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
+import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
+import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
+import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -33,21 +39,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-
-import app.freelancer.syafiqq.gardureporter.BuildConfig;
-import app.freelancer.syafiqq.gardureporter.R;
-import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
-import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
-import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
-import app.freelancer.syafiqq.gardureporter.model.util.Setting;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import timber.log.Timber;
 
 public class Dashboard extends AppCompatActivity implements View.OnClickListener
@@ -93,7 +89,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        Timber.plant(new Timber.DebugTree());
         Timber.d("onCreate");
 
         super.onCreate(savedInstanceState);
@@ -254,18 +249,25 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         }
     }
 
-    private void doSubmit(SubStationReport report)
+    private void doSubmit(final SubStationReport report)
     {
         Timber.d("doSumbit");
+        @NotNull final SharedPreferences settings = super.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
+        final String token = settings.getString(super.getResources().getString(R.string.shared_preferences_authentication_token), null);
+
+        Bag bag = new Bag();
+        bag.data = report;
+        bag.token = token;
+        bag.guard = Setting.getOurInstance().getNetworking().getGuard();
 
         final Gson gson = new Gson();
-        final String data = gson.toJson(report);
+        String data = gson.toJson(bag);
 
         if(this.queue == null)
         {
             this.queue = Volley.newRequestQueue(this);
         }
-        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/insert";
+        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/insert?lang=en";
 
         // Request a string response from the provided URL.
         final RawJsonObjectRequest request = new RawJsonObjectRequest(
@@ -277,6 +279,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     @Override
                     public void onResponse(JSONObject response)
                     {
+                        Timber.d(response.toString());
                         Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
                     }
                 },
@@ -286,27 +289,30 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     public void onErrorResponse(VolleyError error)
                     {
                         final NetworkResponse response = error.networkResponse;
-                        if (error instanceof ServerError && response != null)
+                        if(error instanceof ServerError && response != null)
                         {
                             try
                             {
                                 final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                                final JSONObject obj = new JSONObject(res);
-
-                                Timber.i(obj.toString());
+                                Timber.e(res);
                                 Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_error_sending_to_server), Toast.LENGTH_SHORT).show();
-                            } catch (UnsupportedEncodingException | JSONException e1) {
+                            }
+                            catch(UnsupportedEncodingException e1)
+                            {
                                 Timber.e(e1);
                             }
                         }
                     }
                 }
 
-        ){
+        )
+        {
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
+            public Map<String, String> getHeaders() throws AuthFailureError
+            {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("X-Requested-With", "XMLHttpRequest");
+                headers.put("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate());
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 return headers;
             }
@@ -331,6 +337,17 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         else
         {
             this.locationService.requestLocationUpdates();
+        }
+    }
+
+    private static class Bag
+    {
+        private SubStationReport data;
+        private String token;
+        private String guard;
+
+        public Bag()
+        {
         }
     }
 

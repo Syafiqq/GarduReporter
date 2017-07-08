@@ -5,14 +5,16 @@ import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonRequest;
-
+import java.io.UnsupportedEncodingException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
-
-/**
- * Created by syafiq on 6/23/17.
+/*
+ * This <GarduReporter> created by :
+ * Name         : syafiq
+ * Date / Time  : 07 July 2017, 8:15 AM.
+ * Email        : syafiq.rezpector@gmail.com
+ * Github       : syafiqq
  */
 
 public class RawJsonObjectRequest extends JsonRequest<JSONObject>

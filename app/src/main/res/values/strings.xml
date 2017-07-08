@@ -11,4 +11,20 @@
     <string name="command_setting">Setting</string>
     <string name="global_toast_error_sending_to_server">Error when sending data to server</string>
     <string name="global_toast_success_sending_to_server">Data successfully send to server</string>
+    <string name="content_splash_screen_title_gardu">Gardu</string>
+    <string name="content_splash_screen_title_reporter">Reporter</string>
+    <string name="activity_splash_screen_title">Splash Screen</string>
+    <string name="shared_preferences_authentication_token">token</string>
+    <string name="shared_preferences_authentication_refresh">refresh</string>
+    <string name="activity_auth_login_title">Login</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="activity_auth_login_button_form_submit">Login</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="error_incorrect_login">Account is Invalid</string>
 </resources>
