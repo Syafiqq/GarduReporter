@@ -27,4 +27,5 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="error_incorrect_login">Account is Invalid</string>
+    <string name="common_auth_logout">Logout</string>
 </resources>
