@@ -20,6 +20,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -29,6 +32,7 @@ import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
+import app.freelancer.syafiqq.gardureporter.model.util.Token;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -148,6 +152,30 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         super.unbindService(this.serviceConnection);
         super.onStop();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        Timber.d("onCreateOptionsMenu");
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_dashboard, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        // Handle item selection
+        switch(item.getItemId())
+        {
+            case R.id.activity_dashboard_menu_logout:
+                Token.logoutAccount(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /*
@@ -381,4 +409,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             }
         }
     }
+
+
 }
