@@ -9,9 +9,12 @@ package app.freelancer.syafiqq.gardureporter.model.util;
  */
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Handler;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.controller.SplashScreen;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -154,6 +157,11 @@ public class Token
         queue.add(request);
     }
 
+    public static void logoutAccount(Context context)
+    {
+        new UserLogoutTask(context).execute();
+    }
+
 
     public interface TokenExistenceListener
     {
@@ -174,5 +182,37 @@ public class Token
         public static final int NEED_AUTH = 0x01;
         public static final int TOKEN_VALID = 0x02;
         public static final int CHECK_REFRESH = 0x03;
+    }
+
+    private static class UserLogoutTask extends AsyncTask<Void, Void, Void>
+    {
+        private final Context context;
+
+        UserLogoutTask(Context context)
+        {
+            Timber.d("Constructor");
+            this.context = context;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params)
+        {
+            Timber.d("doInBackground");
+
+            SharedPreferences settings = context.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.remove(this.context.getResources().getString(R.string.shared_preferences_authentication_token));
+            editor.remove(this.context.getResources().getString(R.string.shared_preferences_authentication_refresh));
+            editor.apply();
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param)
+        {
+            @NotNull Intent intent = new Intent(this.context, SplashScreen.class);
+            this.context.startActivity(intent);
+        }
     }
 }
