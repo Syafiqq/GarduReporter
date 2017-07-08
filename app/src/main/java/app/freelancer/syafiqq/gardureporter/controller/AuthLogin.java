@@ -61,6 +61,8 @@ public class AuthLogin extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Timber.d("onCreate");
+
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_auth_login);
 
@@ -106,6 +108,8 @@ public class AuthLogin extends AppCompatActivity
      */
     private void attemptLogin()
     {
+        Timber.d("attemptLogin");
+
         if(this.mAuthTask != null)
         {
             return;
@@ -169,11 +173,15 @@ public class AuthLogin extends AppCompatActivity
 
     private boolean isEmailValid(String email)
     {
+        Timber.d("isEmailValid");
+
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password)
     {
+        Timber.d("isPasswordValid");
+
         return password.length() > 4;
     }
 
@@ -183,6 +191,8 @@ public class AuthLogin extends AppCompatActivity
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show)
     {
+        Timber.d("showProgress");
+
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         this.mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -220,6 +230,8 @@ public class AuthLogin extends AppCompatActivity
 
         UserLoginTask(String email, String password)
         {
+            Timber.d("Constructor");
+
             this.mEmail = email;
             this.mPassword = password;
         }
@@ -330,6 +342,8 @@ public class AuthLogin extends AppCompatActivity
 
         protected void onPostExecute(final Boolean success, final String message)
         {
+            Timber.d("onPostExecute");
+
             AuthLogin.this.mAuthTask = null;
             AuthLogin.this.showProgress(false);
 
@@ -368,6 +382,8 @@ public class AuthLogin extends AppCompatActivity
         @Override
         protected void onCancelled()
         {
+            Timber.d("onCancelled");
+
             AuthLogin.this.mAuthTask = null;
             AuthLogin.this.showProgress(false);
         }
