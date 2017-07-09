@@ -18,7 +18,7 @@ public class Setting
     {
         this.networking = new Networking();
 
-        this.networking.setDomain("http://freelancer.gardu.reporter.app");
+        this.networking.setDomain("https://gardureporter.000webhostapp.com");
         this.networking.setGuard("cca0f1b5701d4f00dc3729b83b7000da");
         this.networking.setCertificate("edd22733c75459253d27126e8d9f628baae653b36cd2e86ac81776580a41645407ee6fc5219c675cd3a4ba1bdab8401376f6909fbcb7e5e22b07fa8480430f45");
     }
