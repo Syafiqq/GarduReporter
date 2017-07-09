@@ -43,11 +43,11 @@ public class RawJsonObjectRequest extends JsonRequest<JSONObject>
             String jsonString = new String(response.data, HttpHeaderParser.parseCharset(response.headers, PROTOCOL_CHARSET));
             return Response.success(new JSONObject(jsonString), HttpHeaderParser.parseCacheHeaders(response));
         }
-        catch (UnsupportedEncodingException e)
+        catch(UnsupportedEncodingException e)
         {
             return Response.error(new ParseError(e));
         }
-        catch (JSONException je)
+        catch(JSONException je)
         {
             return Response.error(new ParseError(je));
         }
