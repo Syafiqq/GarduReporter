@@ -323,6 +323,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     {
                         Dashboard.this.progress.setVisibility(View.GONE);
                         Dashboard.this.submit.setEnabled(true);
+
+                        Timber.e(error);
                         final NetworkResponse response = error.networkResponse;
                         if(error instanceof ServerError && response != null)
                         {

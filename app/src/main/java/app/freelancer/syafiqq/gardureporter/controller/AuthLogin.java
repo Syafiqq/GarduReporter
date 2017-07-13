@@ -302,6 +302,7 @@ public class AuthLogin extends AppCompatActivity
                         @Override
                         public void onErrorResponse(VolleyError error)
                         {
+                            Timber.e(error);
                             final NetworkResponse response = error.networkResponse;
                             if(error instanceof ServerError && response != null)
                             {
