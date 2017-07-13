@@ -22,10 +22,15 @@ public class SplashScreen extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_splash_screen);
-        this.initializeTimber();
         Timber.d("Constructor");
 
         new TokenValidationTask().execute();
+    }
+
+    @Override protected void onStart()
+    {
+        super.onStart();
+        this.initializeTimber();
     }
 
     private void initializeTimber()
