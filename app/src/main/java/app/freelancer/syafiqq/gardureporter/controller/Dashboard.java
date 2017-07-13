@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
@@ -85,6 +86,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private TextInputEditText voltage;
     private TextInputEditText current;
     private Button submit;
+    private ProgressBar progress;
     //DAO
     private SubStationReport report;
     private RequestQueue queue;
@@ -120,6 +122,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.voltage = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_voltage);
         this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_current);
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
+        this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
 
         this.submit.setOnClickListener(this);
         this.submit.setEnabled(this.checkPermissions());
@@ -309,6 +312,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     {
                         Timber.d(response.toString());
                         Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
+                        Dashboard.this.progress.setVisibility(View.GONE);
+                        Dashboard.this.submit.setEnabled(true);
                     }
                 },
                 new Response.ErrorListener()
@@ -316,6 +321,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
+                        Dashboard.this.progress.setVisibility(View.GONE);
+                        Dashboard.this.submit.setEnabled(true);
                         final NetworkResponse response = error.networkResponse;
                         if(error instanceof ServerError && response != null)
                         {
@@ -354,6 +361,9 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     @Override
     public void onClick(View v)
     {
+        Dashboard.this.progress.setVisibility(View.VISIBLE);
+        Dashboard.this.submit.setEnabled(true);
+
         final SubStationReport report1 = this.report;
         report1.setSubstation(this.substation.getText().toString());
         report1.setVoltage(Double.parseDouble(this.voltage.getText().toString()));
@@ -389,7 +399,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             final Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
             if(location != null)
             {
-                Timber.d("Location=[%g %g]", location.getLatitude(), location.getLongitude());
+                Timber.d("Location %s", location.toString());
 
                 final SubStationReport report = Dashboard.this.report;
                 if(report.getLocation() == null)
