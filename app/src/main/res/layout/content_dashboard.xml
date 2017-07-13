@@ -1,67 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/vertical_padding"
-    android:paddingEnd="@dimen/horizontal_padding"
-    android:paddingLeft="@dimen/horizontal_padding"
-    android:paddingRight="@dimen/horizontal_padding"
-    android:paddingStart="@dimen/horizontal_padding"
-    android:paddingTop="@dimen/vertical_padding"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="app.freelancer.syafiqq.gardureporter.controller.Dashboard"
-    tools:showIn="@layout/content_dashboard">
-
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/vertical_padding"
+        android:paddingEnd="@dimen/horizontal_padding"
+        android:paddingLeft="@dimen/horizontal_padding"
+        android:paddingRight="@dimen/horizontal_padding"
+        android:paddingStart="@dimen/horizontal_padding"
+        android:paddingTop="@dimen/vertical_padding"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context="app.freelancer.syafiqq.gardureporter.controller.Dashboard">
+    
 
     <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/content_dashboard_edittext_substation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/content_dashboard_textview_substation"/>
+                android:id="@+id/content_dashboard_edittext_substation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/content_dashboard_textview_substation" />
 
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/content_dashboard_edittext_voltage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/content_dashboard_textview_voltage"
-            android:inputType="numberDecimal"/>
+                android:id="@+id/content_dashboard_edittext_voltage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/content_dashboard_textview_voltage"
+                android:inputType="numberDecimal" />
 
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
         <android.support.design.widget.TextInputEditText
-            android:id="@+id/content_dashboard_edittext_current"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/content_dashboard_textview_current"
-            android:inputType="numberDecimal"/>
+                android:id="@+id/content_dashboard_edittext_current"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/content_dashboard_textview_current"
+                android:inputType="numberDecimal" />
 
     </android.support.design.widget.TextInputLayout>
 
     <Button
-        android:id="@+id/content_dashboard_button_submit"
-        style="@style/Widget.AppCompat.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="@string/content_dashboard_button_submit"/>
+            android:id="@+id/content_dashboard_button_submit"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="@string/content_dashboard_button_submit" />
 
 
 </LinearLayout>
