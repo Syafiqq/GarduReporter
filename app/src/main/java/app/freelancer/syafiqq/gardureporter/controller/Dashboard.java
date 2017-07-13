@@ -1,23 +1,21 @@
 package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -31,7 +29,6 @@ import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
-import app.freelancer.syafiqq.gardureporter.model.service.LocationService;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import app.freelancer.syafiqq.gardureporter.model.util.Token;
 import com.android.volley.AuthFailureError;
@@ -43,44 +40,29 @@ import com.android.volley.ServerError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import timber.log.Timber;
 
-public class Dashboard extends AppCompatActivity implements View.OnClickListener
+public class Dashboard extends AppCompatActivity implements View.OnClickListener, LocationListener
 {
     private static final String TAG = Dashboard.class.getSimpleName();
 
     // Used in checking for runtime permissions.
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 0x22;
 
-    // The BroadcastReceiver used to listen from broadcasts from the service.
-    private GPSReceiver gpsReceiver;
+    private LocationService service;
 
-    // A reference to the service used to get location updates.
-    private LocationService locationService = null;
-
-    // Tracks the bound state of the service.
-    // Monitors the state of the connection to the service.
-    private final ServiceConnection serviceConnection = new ServiceConnection()
-    {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service)
-        {
-            final LocationService.LocalBinder binder = (LocationService.LocalBinder) service;
-            Dashboard.this.locationService = binder.getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name)
-        {
-            Dashboard.this.locationService = null;
-        }
-    };
     // UI
     private TextInputEditText substation;
     private TextInputEditText voltage;
@@ -102,7 +84,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         final Toolbar toolbar = (Toolbar) findViewById(R.id.activity_dashboard_toolbar_toolbar);
         super.setSupportActionBar(toolbar);
 
-        this.gpsReceiver = new GPSReceiver();
+        this.service = new LocationService();
         this.report = new SubStationReport();
         this.sendTag = "REPORT_SEND";
 
@@ -110,6 +92,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             requestPermissions();
         }
+
+        this.service.initializeService();
     }
 
     @Override
@@ -126,8 +110,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         this.submit.setOnClickListener(this);
         this.submit.setEnabled(this.checkPermissions());
-
-        super.bindService(new Intent(this, LocationService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -136,7 +118,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         Timber.d("onResume");
 
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(this.gpsReceiver, new IntentFilter(LocationService.ACTION_BROADCAST));
     }
 
     @Override
@@ -144,7 +125,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         Timber.d("onPause");
 
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.gpsReceiver);
         super.onPause();
     }
 
@@ -153,7 +133,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         Timber.d("onStop");
 
-        super.unbindService(this.serviceConnection);
         super.onStop();
     }
 
@@ -248,8 +227,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             }
             else if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                // Permission was granted.
-                this.locationService.requestLocationUpdates();
+
             }
             else
             {
@@ -277,6 +255,58 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                         .show();
             }
             this.submit.setEnabled(this.checkPermissions());
+        }
+    }
+
+    @Override
+    public void onClick(View v)
+    {
+        Dashboard.this.progress.setVisibility(View.VISIBLE);
+        Dashboard.this.submit.setEnabled(false);
+
+        final SubStationReport report1 = this.report;
+        report1.setSubstation(this.substation.getText().toString());
+        report1.setVoltage(Double.parseDouble(this.voltage.getText().toString()));
+        report1.setCurrent(Double.parseDouble(this.current.getText().toString()));
+        if(!checkPermissions())
+        {
+            requestPermissions();
+        }
+        else
+        {
+            this.service.requestLocationUpdates(this);
+        }
+    }
+
+    @Override public void onLocationChanged(Location location)
+    {
+        Timber.d("onLocationChanged");
+        float suitableMeter = 30f; // adjust your need
+
+        if(location != null)
+        {
+            Timber.d("Location [%.14g,%.14g] %s", location.getLatitude(), location.getLongitude(), location.getAccuracy());
+
+            if(location.hasAccuracy() && location.getAccuracy() <= suitableMeter)
+            {
+                // This is your most accurate location.
+                this.service.removeLocationUpdates(this);
+                Timber.d("Location %s", location.toString());
+
+                final SubStationReport report = Dashboard.this.report;
+                if(report.getLocation() == null)
+                {
+                    report.setLocation(new app.freelancer.syafiqq.gardureporter.model.dao.Location(0., 0.));
+                }
+
+                final app.freelancer.syafiqq.gardureporter.model.dao.Location reportLocation = report.getLocation();
+                if(reportLocation != null)
+                {
+                    reportLocation.setLatitude(location.getLatitude());
+                    reportLocation.setLongitude(location.getLongitude());
+                }
+                this.doSubmit(Dashboard.this.report);
+            }
         }
     }
 
@@ -360,26 +390,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.queue.add(request);
     }
 
-    @Override
-    public void onClick(View v)
-    {
-        Dashboard.this.progress.setVisibility(View.VISIBLE);
-        Dashboard.this.submit.setEnabled(true);
-
-        final SubStationReport report1 = this.report;
-        report1.setSubstation(this.substation.getText().toString());
-        report1.setVoltage(Double.parseDouble(this.voltage.getText().toString()));
-        report1.setCurrent(Double.parseDouble(this.current.getText().toString()));
-        if(!checkPermissions())
-        {
-            requestPermissions();
-        }
-        else
-        {
-            this.locationService.requestLocationUpdates();
-        }
-    }
-
     private static class Bag
     {
         private SubStationReport data;
@@ -391,34 +401,142 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         }
     }
 
-    private final class GPSReceiver extends BroadcastReceiver
+    private final class LocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
     {
-        @Override
-        public void onReceive(Context context, Intent intent)
+        /**
+         * The desired interval for location updates. Inexact. Updates may be more or less frequent.
+         */
+        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+        /**
+         * The fastest rate for active location updates. Updates will never be more frequent
+         * than this value.
+         */
+        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+        private GoogleApiClient apiClient;
+        private LocationManager locationManager;
+        private LocationRequest locationRequest;
+
+        public LocationService()
         {
-            Timber.d("onReceive");
+            Timber.d("Constructor");
+        }
 
-            final Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
-            if(location != null)
+        public void initializeService()
+        {
+            Timber.d("initializeService");
+
+            this.createAPI();
+            this.createLocationRequest();
+            this.createLocationManager();
+        }
+
+        public void requestLocationUpdates(LocationListener listener)
+        {
+            Timber.d("requestLocationUpdates");
+
+            this.resetGPS();
+            try
             {
-                Timber.d("Location %s", location.toString());
-
-                final SubStationReport report = Dashboard.this.report;
-                if(report.getLocation() == null)
-                {
-                    report.setLocation(new app.freelancer.syafiqq.gardureporter.model.dao.Location(0., 0.));
-                }
-
-                final app.freelancer.syafiqq.gardureporter.model.dao.Location reportLocation = report.getLocation();
-                if(reportLocation != null)
-                {
-                    reportLocation.setLatitude(location.getLatitude());
-                    reportLocation.setLongitude(location.getLongitude());
-                }
-                Dashboard.this.doSubmit(Dashboard.this.report);
-
-                Dashboard.this.locationService.removeLocationUpdates();
+                LocationServices.FusedLocationApi.requestLocationUpdates(this.apiClient, this.locationRequest, listener);
             }
+            catch(SecurityException unlikely)
+            {
+                Timber.e("Lost location permission. Could not request updates. " + unlikely);
+            }
+        }
+
+        public void removeLocationUpdates(LocationListener listener)
+        {
+            Timber.d("removeLocationUpdates");
+
+            try
+            {
+                LocationServices.FusedLocationApi.removeLocationUpdates(this.apiClient, listener);
+            }
+            catch(SecurityException unlikely)
+            {
+                Timber.e("Lost location permission. Could not remove updates. " + unlikely);
+            }
+        }
+
+        private void resetGPS()
+        {
+            locationManager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
+            Bundle bundle = new Bundle();
+            locationManager.sendExtraCommand("gps", "force_xtra_injection", bundle);
+            locationManager.sendExtraCommand("gps", "force_time_injection", bundle);
+        }
+
+        private void createLocationManager()
+        {
+            Timber.d("createLocationManager");
+
+            this.locationManager = (LocationManager) Dashboard.super.getSystemService(LOCATION_SERVICE);
+        }
+
+        private void createLocationRequest()
+        {
+            Timber.d("createLocationRequest");
+
+            this.locationRequest = new LocationRequest();
+            this.locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+            this.locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+            this.locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        }
+
+        private void createAPI()
+        {
+            Timber.d("createAPI");
+
+            this.apiClient = new GoogleApiClient.Builder(Dashboard.this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+            this.apiClient.connect();
+        }
+
+        @Override public void onConnected(@Nullable Bundle bundle)
+        {
+            Timber.d("onConnected");
+
+            try
+            {
+                LocationServices.FusedLocationApi.getLastLocation(this.apiClient);
+            }
+            catch(SecurityException unlikely)
+            {
+                Timber.e("Lost location permission." + unlikely);
+            }
+        }
+
+        @Override public void onConnectionSuspended(int i)
+        {
+            Timber.d("onConnectionSuspended");
+
+        }
+
+        @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+        {
+            Timber.d("onConnectionFailed");
+
+        }
+
+        public boolean isGPSEnabled(Context ctx)
+        {
+            @NotNull
+            final LocationManager locationManager = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
+            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        }
+
+        public boolean isInternetConnected(Context ctx)
+        {
+            @NotNull
+            final ConnectivityManager manager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            @Nullable
+            final NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
+            return activeNetwork != null && (activeNetwork.getState() == NetworkInfo.State.CONNECTED || activeNetwork.getState() == NetworkInfo.State.CONNECTING);
         }
     }
 
