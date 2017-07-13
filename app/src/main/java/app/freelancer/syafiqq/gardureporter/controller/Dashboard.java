@@ -28,6 +28,7 @@ import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
+import app.freelancer.syafiqq.gardureporter.model.gson.serializer.custom.Location14DigitSerializer;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import app.freelancer.syafiqq.gardureporter.model.util.Token;
@@ -46,6 +47,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -281,13 +283,12 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     @Override public void onLocationChanged(Location location)
     {
         Timber.d("onLocationChanged");
-        float suitableMeter = 30f; // adjust your need
 
         if(location != null)
         {
             Timber.d("Location [%.14g,%.14g] %s", location.getLatitude(), location.getLongitude(), location.getAccuracy());
 
-            if(location.hasAccuracy() && location.getAccuracy() <= suitableMeter)
+            if(location.hasAccuracy() && location.getAccuracy() <= LocationService.DISTANCE_ERROR_THRESHOLD_IN_METERS)
             {
                 // This is your most accurate location.
                 this.service.removeLocationUpdates(this);
@@ -321,7 +322,9 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         bag.token = token;
         bag.guard = Setting.getOurInstance().getNetworking().getGuard();
 
-        final Gson gson = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(app.freelancer.syafiqq.gardureporter.model.dao.Location.class, new Location14DigitSerializer());
+        Gson gson = gsonBuilder.create();
         String data = gson.toJson(bag);
 
         if(this.queue == null)
@@ -406,12 +409,15 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         /**
          * The desired interval for location updates. Inexact. Updates may be more or less frequent.
          */
-        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
         /**
          * The fastest rate for active location updates. Updates will never be more frequent
          * than this value.
          */
-        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 3000;
+
+        private static final float DISTANCE_ERROR_THRESHOLD_IN_METERS = 100;
+
         private GoogleApiClient apiClient;
         private LocationManager locationManager;
         private LocationRequest locationRequest;
@@ -503,6 +509,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             try
             {
                 LocationServices.FusedLocationApi.getLastLocation(this.apiClient);
+                LocationServices.FusedLocationApi.flushLocations(this.apiClient);
             }
             catch(SecurityException unlikely)
             {
