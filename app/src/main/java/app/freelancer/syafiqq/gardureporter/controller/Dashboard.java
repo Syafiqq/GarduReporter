@@ -1,8 +1,10 @@
 package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -47,10 +49,14 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.UnsupportedEncodingException;
@@ -71,6 +77,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     // Used in checking for runtime permissions.
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 0x22;
     private static final int SECONDS_DELAYED = 30;
+    private static final int REQUEST_CHECK_SETTINGS = 0x01;
 
     private LocationService service;
     private ObservableLocation location;
@@ -233,6 +240,31 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        switch(requestCode)
+        {
+            // Check for the integer request code originally supplied to startResolutionForResult().
+            case Dashboard.REQUEST_CHECK_SETTINGS:
+                switch(resultCode)
+                {
+                    case Activity.RESULT_OK:
+                    {
+                        Timber.d("User agreed to make required location settings changes.");
+                        // Nothing to do. startLocationupdates() gets called in onResume again.
+                    }
+                    break;
+                    case Activity.RESULT_CANCELED:
+                    {
+                        Timber.d("User chose not to make required location settings changes.");
+                    }
+                    break;
+                }
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /*============================================================================================*/
@@ -560,7 +592,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
          * Stores the types of location services the client is interested in using. Used for checking
          * settings to determine if the device has optimal location settings.
          */
-        protected LocationSettingsRequest mLocationSettingsRequest;
+        protected LocationSettingsRequest locationSettingsRequest;
         /**
          * Represents a geographical location.
          */
@@ -581,9 +613,22 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             this.createAPI();
             this.createLocationRequest();
             this.createLocationManager();
+            this.buildLocationSettingsRequest();
         }
 
-        public void requestLocationUpdates(LocationListener listener)
+        /**
+         * Uses a {@link com.google.android.gms.location.LocationSettingsRequest.Builder} to build
+         * a {@link com.google.android.gms.location.LocationSettingsRequest} that is used for checking
+         * if a device has the needed location settings.
+         */
+        protected void buildLocationSettingsRequest()
+        {
+            final LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+            builder.addLocationRequest(this.locationRequest);
+            locationSettingsRequest = builder.build();
+        }
+
+        public void requestLocationUpdates(final LocationListener listener)
         {
             Timber.d("requestLocationUpdates");
 
@@ -592,8 +637,51 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             {
                 if(!this.isAlreadyRequested)
                 {
-                    LocationServices.FusedLocationApi.requestLocationUpdates(this.apiClient, this.locationRequest, listener);
-                    this.isAlreadyRequested = true;
+                    //LocationServices.FusedLocationApi.requestLocationUpdates(this.apiClient, this.locationRequest, listener);
+                    LocationServices.SettingsApi.checkLocationSettings(
+                            this.apiClient,
+                            this.locationSettingsRequest
+                    ).setResultCallback(new ResultCallback<LocationSettingsResult>()
+                    {
+                        @Override
+                        public void onResult(@NonNull LocationSettingsResult locationSettingsResult)
+                        {
+                            final Status status = locationSettingsResult.getStatus();
+                            switch(status.getStatusCode())
+                            {
+                                case LocationSettingsStatusCodes.SUCCESS:
+                                {
+                                    Timber.d("All location settings are satisfied.");
+                                    //noinspection MissingPermission
+                                    LocationServices.FusedLocationApi.requestLocationUpdates(LocationService.this.apiClient, LocationService.this.locationRequest, listener);
+                                    Dashboard.this.service.isAlreadyRequested = true;
+                                    break;
+                                }
+                                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                                {
+                                    Timber.d("Location settings are not satisfied. Attempting to upgrade " +
+                                            "location settings ");
+                                    try
+                                    {
+                                        // Show the dialog by calling startResolutionForResult(), and check the
+                                        // result in onActivityResult().
+                                        status.startResolutionForResult(Dashboard.this, Dashboard.REQUEST_CHECK_SETTINGS);
+                                    }
+                                    catch(IntentSender.SendIntentException e)
+                                    {
+                                        Timber.e(e);
+                                    }
+                                }
+                                break;
+                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                                {
+                                    String errorMessage = "Location settings are inadequate, and cannot be fixed here. Fix in Settings.";
+                                    Timber.e(errorMessage);
+                                    Toast.makeText(Dashboard.this, errorMessage, Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                    });
                 }
 
             }
@@ -609,8 +697,17 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
             try
             {
-                LocationServices.FusedLocationApi.removeLocationUpdates(this.apiClient, listener);
-                this.isAlreadyRequested = false;
+                LocationServices.FusedLocationApi.removeLocationUpdates(
+                        this.apiClient,
+                        listener
+                ).setResultCallback(new ResultCallback<Status>()
+                {
+                    @Override
+                    public void onResult(@NonNull Status status)
+                    {
+                        LocationService.this.isAlreadyRequested = false;
+                    }
+                });
             }
             catch(SecurityException unlikely)
             {
