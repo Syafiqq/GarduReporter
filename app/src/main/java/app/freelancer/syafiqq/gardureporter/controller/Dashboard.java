@@ -26,8 +26,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.Switch;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
@@ -87,8 +88,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private TextInputEditText voltage;
     private TextInputEditText current;
     private Button submit;
-    private Button locationReq;
-    private TextView locationAccuracy;
+    private Switch locationRequestToggle;
     private ProgressBar progress;
     //DAO
     private SubStationReport report;
@@ -135,9 +135,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.voltage = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_voltage);
         this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_current);
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
-        this.locationReq = (Button) findViewById(R.id.content_dashboard_button_location_request);
+        this.locationRequestToggle = (Switch) findViewById(R.id.content_dashboard_switch_location_accuracy);
         this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
-        this.locationAccuracy = (TextView) findViewById(R.id.content_dashboard_textview_location_accuracy);
         this.isSubmitRequested = false;
 
         this.updateAccuracy(this.location.getLocation());
@@ -177,11 +176,18 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         };
 
         this.submit.setOnClickListener(this);
-        this.locationReq.setOnClickListener(new View.OnClickListener()
+        this.locationRequestToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
-            @Override public void onClick(View view)
+            @Override public void onCheckedChanged(CompoundButton compoundButton, boolean checked)
             {
-                Dashboard.this.onLocationRequestButtonPressed();
+                if(checked)
+                {
+                    Dashboard.this.onLocationRequestSwitchedOn();
+                }
+                else
+                {
+                    Dashboard.this.onLocationRequestSwitchedOff();
+                }
             }
         });
         this.location.addObserver(this.accuracyObserver);
@@ -248,6 +254,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             // Check for the integer request code originally supplied to startResolutionForResult().
             case Dashboard.REQUEST_CHECK_SETTINGS:
+            {
                 switch(resultCode)
                 {
                     case Activity.RESULT_OK:
@@ -262,7 +269,9 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                     }
                     break;
                 }
+                this.onLocationRequestSwitchedOff();
                 break;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -273,12 +282,12 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         Timber.d("updateAccuracy");
 
-        this.locationAccuracy.setText(String.format(Locale.getDefault(), super.getResources().getString(R.string.content_dashboard_textview_accuracy_label), location == null ? Float.POSITIVE_INFINITY : location.getAccuracy()));
+        this.locationRequestToggle.setText(String.format(Locale.getDefault(), super.getResources().getString(R.string.content_dashboard_accuracy_label), location == null ? Float.POSITIVE_INFINITY : location.getAccuracy()));
     }
 
-    private void onLocationRequestButtonPressed()
+    private void onLocationRequestSwitchedOn()
     {
-        Timber.d("onLocationRequestButtonPressed");
+        Timber.d("onLocationRequestSwitchedOn");
 
         if(!this.checkPermissions())
         {
@@ -289,6 +298,17 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             this.service.requestLocationUpdates(this);
         }
     }
+
+    private void onLocationRequestSwitchedOff()
+    {
+        Timber.d("onLocationRequestSwitchedOn");
+
+        this.shiftUISubmit(true);
+        this.locationRequestToggle.setChecked(false);
+        this.service.removeLocationUpdates(Dashboard.this);
+        this.location.setLocation(null);
+    }
+
 
     /*
      * Returns the current state of the permissions needed.
@@ -406,7 +426,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         }
         else
         {
-            this.service.requestLocationUpdates(this);
+            this.locationRequestToggle.setChecked(true);
             this.isSubmitRequested = true;
             this.handler.postDelayed(this.asyncOverrideLocationRequest, SECONDS_DELAYED * 1000);
         }
@@ -493,7 +513,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                         Timber.d(response.toString());
                         Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
                         Dashboard.this.shiftUISubmit(true);
-                        Dashboard.this.location.setLocation(null);
+                        Dashboard.this.onLocationRequestSwitchedOff();
                     }
                 },
                 new Response.ErrorListener()
@@ -544,13 +564,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             this.progress.setVisibility(View.GONE);
             this.submit.setEnabled(true);
-            this.locationReq.setEnabled(true);
+            this.locationRequestToggle.setEnabled(true);
         }
         else
         {
             this.progress.setVisibility(View.VISIBLE);
             this.submit.setEnabled(false);
-            this.locationReq.setEnabled(false);
+            this.locationRequestToggle.setEnabled(false);
         }
     }
 
@@ -663,8 +683,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                                             "location settings ");
                                     try
                                     {
-                                        // Show the dialog by calling startResolutionForResult(), and check the
-                                        // result in onActivityResult().
+                                        /* Show the dialog by calling startResolutionForResult(), and check the
+                                         result in onActivityResult(). */
                                         status.startResolutionForResult(Dashboard.this, Dashboard.REQUEST_CHECK_SETTINGS);
                                     }
                                     catch(IntentSender.SendIntentException e)
