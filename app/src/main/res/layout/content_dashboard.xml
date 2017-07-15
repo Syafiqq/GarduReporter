@@ -58,15 +58,50 @@
                 android:hint="@string/content_dashboard_textview_current"
                 android:inputType="numberDecimal" />
 
+
     </android.support.design.widget.TextInputLayout>
 
-    <Button
-            android:id="@+id/content_dashboard_button_submit"
-            style="@style/Widget.AppCompat.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:text="@string/content_dashboard_button_submit" />
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <Button
+                android:id="@+id/content_dashboard_button_location_request"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:enabled="false"
+                android:text="@string/content_dashboard_button_location_request" />
+
+        <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        <Button
+                android:id="@+id/content_dashboard_button_submit"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:enabled="false"
+                android:text="@string/content_dashboard_button_submit" />
+    </LinearLayout>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/content_dashboard_textview_accuracy_label"
+                android:id="@+id/content_dashboard_textview_location_accuracy"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+    </LinearLayout>
 
 
 </LinearLayout>
