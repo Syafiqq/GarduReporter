@@ -28,4 +28,8 @@
     <string name="error_field_required">This field is required</string>
     <string name="error_incorrect_login">Account is Invalid</string>
     <string name="common_auth_logout">Logout</string>
+    <string name="content_dashboard_button_location_request">GPS</string>
+    <string name="content_dashboard_accuracy_label" formatted="true">GPS Accurracy : %.1f</string>
+    <string name="error_connect_to_location_api">Cannot connect to location service</string>
+    <string name="error_no_location_retrieved">Cannot locate device</string>
 </resources>

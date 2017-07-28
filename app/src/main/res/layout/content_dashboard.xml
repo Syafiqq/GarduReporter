@@ -58,6 +58,7 @@
                 android:hint="@string/content_dashboard_textview_current"
                 android:inputType="numberDecimal" />
 
+
     </android.support.design.widget.TextInputLayout>
 
     <Button
@@ -66,7 +67,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
+            android:enabled="false"
             android:text="@string/content_dashboard_button_submit" />
 
+    <Switch
+            android:text="@string/content_dashboard_accuracy_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/content_dashboard_switch_location_accuracy" />
 
 </LinearLayout>
