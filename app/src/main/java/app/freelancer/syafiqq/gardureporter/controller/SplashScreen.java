@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import app.freelancer.syafiqq.gardureporter.model.util.Token;
 import java.util.concurrent.CountDownLatch;
@@ -101,7 +102,7 @@ public class SplashScreen extends AppCompatActivity
             }, SECONDS_DELAYED * 1000);
         }
 
-        @Override public void tokenExists(String token)
+        @Override public void tokenExists(TokenOrm token)
         {
             Timber.d("tokenExists");
 
@@ -116,14 +117,14 @@ public class SplashScreen extends AppCompatActivity
             this.checkLatch.countDown();
         }
 
-        @Override public void tokenValid(String token, int status, String message)
+        @Override public void tokenValid(TokenOrm token, int status, String message)
         {
             Timber.d("tokenValid");
 
             this.checkLatch.countDown();
         }
 
-        @Override public void tokenInvalid(String token, int status, String massage)
+        @Override public void tokenInvalid(TokenOrm token, int status, String massage)
         {
             Timber.d("tokenInvalid");
 
