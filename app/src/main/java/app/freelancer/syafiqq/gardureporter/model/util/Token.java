@@ -12,26 +12,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Handler;
+import android.support.annotation.NonNull;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.controller.SplashScreen;
-import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.Volley;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
+import app.freelancer.syafiqq.gardureporter.model.service.AuthService;
+import java.io.IOException;
+import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
 
 public class Token
@@ -44,9 +40,10 @@ public class Token
 
         @NotNull final SharedPreferences settings = context.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
         String token = settings.getString(context.getResources().getString(R.string.shared_preferences_authentication_token), null);
+        String refresh = settings.getString(context.getResources().getString(R.string.shared_preferences_authentication_token), null);
         if(token != null)
         {
-            listener.tokenExists(token);
+            listener.tokenExists(new TokenOrm(token, refresh));
         }
         else
         {
@@ -54,107 +51,55 @@ public class Token
         }
     }
 
-    public static void checkValidity(@NotNull final Context context, final String token, @NotNull final Token.TokenValidityListener listener)
+    public static void checkValidity(@NotNull final Context context, final TokenOrm token, @NotNull final Token.TokenValidityListener listener)
     {
         Timber.d("checkValidity");
 
-        RequestQueue queue = Volley.newRequestQueue(context);
-        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/check?lang=en";
-
-        final JSONObject entry = new JSONObject();
-        try
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(Setting.Networking.getReservedClient(context))
+                .build();
+        @NotNull final AuthService authService = retrofit.create(AuthService.class);
+        authService.tokenCheck(token).enqueue(new Callback<ResponseBody>()
         {
-            entry.put("token", token);
-            entry.put("guard", Setting.getOurInstance().getNetworking().getGuard());
-        }
-        catch(JSONException e)
-        {
-            Timber.e(e);
-        }
-
-        // Request a string response from the provided URL.
-        final RawJsonObjectRequest request = new RawJsonObjectRequest(
-                Request.Method.POST,
-                url,
-                entry.toString(),
-                new Response.Listener<JSONObject>()
+            @Override public void onResponse(@NotNull Call<ResponseBody> call, @NotNull Response<ResponseBody> response)
+            {
+                String message = "";
+                boolean success = false;
+                @Nullable ResponseBody body = response.body();
+                if(body != null)
                 {
-                    @Override
-                    public void onResponse(JSONObject response)
+                    try
                     {
-                        String message = null;
-                        boolean success = false;
-                        try
+                        JSONObject res = new JSONObject(body.string());
+                        JSONObject data = res.optJSONObject("data");
+                        if(data != null)
                         {
-                            JSONObject data = response.getJSONObject("data");
-                            int status = data.getInt("status");
-                            JSONArray messages = data.getJSONArray("message");
-                            message = messages.getString(0);
-                            if(status == 1)
-                            {
-                                success = true;
-                            }
-                        }
-                        catch(JSONException e)
-                        {
-                            Timber.e(e);
-                        }
-                        if(success)
-                        {
-                            listener.tokenValid(token, State.TOKEN_VALID, message);
-                        }
-                        else
-                        {
-                            listener.tokenInvalid(token, State.CHECK_REFRESH, message);
+                            success = data.optInt("status") > 1;
+                            message = data.optJSONArray("message").getString(0);
                         }
                     }
-                },
-                new Response.ErrorListener()
-                {
-                    public static final int SECONDS_DELAYED = 2;
-
-                    @Override
-                    public void onErrorResponse(VolleyError error)
+                    catch(IOException | JSONException e)
                     {
-                        final NetworkResponse response = error.networkResponse;
-                        if(error instanceof ServerError && response != null)
-                        {
-                            try
-                            {
-                                final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                                Timber.e(res);
-                            }
-                            catch(UnsupportedEncodingException e1)
-                            {
-                                Timber.e(e1);
-                            }
-                            new Handler().postDelayed(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    Token.checkValidity(context, token, listener);
-                                }
-                            }, SECONDS_DELAYED * 1000);
-                        }
+                        Timber.e(e);
                     }
                 }
-
-        )
-        {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError
-            {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("X-Requested-With", "XMLHttpRequest");
-                headers.put("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate());
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
+                if(success)
+                {
+                    listener.tokenValid(token, State.TOKEN_VALID, message);
+                }
+                else
+                {
+                    listener.tokenInvalid(token, State.CHECK_REFRESH, message);
+                }
             }
-        };
-        // Add the request to the RequestQueue.
 
-        request.setTag(API_AUTH_CHECK);
-        queue.add(request);
+            @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable throwable)
+            {
+                Timber.e(throwable);
+            }
+        });
     }
 
     public static void logoutAccount(Context context)
@@ -165,16 +110,16 @@ public class Token
 
     public interface TokenExistenceListener
     {
-        void tokenExists(String token);
+        void tokenExists(TokenOrm token);
 
-        void tokenNotExists(int needAuth);
+        void tokenNotExists(int auth);
     }
 
     public interface TokenValidityListener
     {
-        void tokenValid(String token, int status, String message);
+        void tokenValid(TokenOrm token, int status, String message);
 
-        void tokenInvalid(String token, int status, String massage);
+        void tokenInvalid(TokenOrm token, int status, String massage);
     }
 
     public static class State
