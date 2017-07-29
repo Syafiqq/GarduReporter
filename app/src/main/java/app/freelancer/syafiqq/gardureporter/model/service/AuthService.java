@@ -12,7 +12,6 @@ import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.UserOrm;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -20,7 +19,7 @@ import retrofit2.http.Path;
 public interface AuthService
 {
     @POST("/api/mobile/auth/login/{group}?lang=en")
-    void clientLogin(@Path("group") String group, @Body UserOrm user, Callback<TokenOrm> token);
+    Call<ResponseBody> login(@Path("group") String group, @Body UserOrm user);
 
     @POST("/api/mobile/auth/check?lang=en")
     Call<ResponseBody> tokenCheck(@Body TokenOrm token);
