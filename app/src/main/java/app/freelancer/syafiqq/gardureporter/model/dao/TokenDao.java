@@ -1,4 +1,4 @@
-package app.freelancer.syafiqq.gardureporter.model.util;
+package app.freelancer.syafiqq.gardureporter.model.dao;
 
 /*
  * This <GarduReporter> created by : 
@@ -17,6 +17,7 @@ import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.controller.SplashScreen;
 import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
 import app.freelancer.syafiqq.gardureporter.model.service.AuthService;
+import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import java.io.IOException;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
@@ -30,11 +31,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
 
-public class Token
+public class TokenDao
 {
     private static final String API_AUTH_CHECK = "check";
 
-    public static void checkTokenExistence(@NotNull final Context context, @NotNull Token.TokenExistenceListener listener)
+    public static void checkTokenExistence(@NotNull final Context context, @NotNull TokenDao.TokenExistenceListener listener)
     {
         Timber.d("checkTokenExistence");
 
@@ -51,7 +52,7 @@ public class Token
         }
     }
 
-    public static void checkValidity(@NotNull final Context context, final TokenOrm token, @NotNull final Token.TokenValidityListener listener)
+    public static void checkValidity(@NotNull final Context context, final TokenOrm token, @NotNull final TokenDao.TokenValidityListener listener)
     {
         Timber.d("checkValidity");
 

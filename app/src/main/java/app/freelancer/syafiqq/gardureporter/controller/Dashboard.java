@@ -35,10 +35,10 @@ import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.BooleanObserver;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.ObservableLocation;
 import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
+import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
 import app.freelancer.syafiqq.gardureporter.model.gson.serializer.custom.Location14DigitSerializer;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
-import app.freelancer.syafiqq.gardureporter.model.util.Token;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -241,7 +241,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         switch(item.getItemId())
         {
             case R.id.activity_dashboard_menu_logout:
-                Token.logoutAccount(this);
+                TokenDao.logoutAccount(this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
