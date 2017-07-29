@@ -100,11 +100,18 @@ public class Setting
         {
             return new HostnameVerifier()
             {
-                @Override public boolean verify(String s, SSLSession sslSession)
+                @Override public boolean verify(String host, SSLSession sslSession)
                 {
-                    Timber.d("String s" + s);
-                    Timber.d("SSL Sessioin s" + sslSession);
-                    return true;
+                    boolean isVerified = false;
+                    switch(host)
+                    {
+                        case "freelancer.gardu.repoter.app":
+                        {
+                            isVerified = false;
+                            break;
+                        }
+                    }
+                    return isVerified;
                 }
             };
         }
