@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.orm.UserOrm;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import com.android.volley.AuthFailureError;
@@ -49,13 +50,12 @@ public class AuthLogin extends AppCompatActivity
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
-
     // UI references.
     private EditText mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private UserOrm user;
     private int jumper;
 
     @Override
@@ -68,6 +68,7 @@ public class AuthLogin extends AppCompatActivity
 
         Intent intent = super.getIntent();
         this.jumper = intent.getIntExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
+        this.user = new UserOrm();
 
         // Set up the login form.
         this.mEmailView = (EditText) findViewById(R.id.activity_auth_login_edit_text_form_email);
@@ -110,9 +111,9 @@ public class AuthLogin extends AppCompatActivity
     {
         Timber.d("attemptLogin");
 
-        if(this.mAuthTask != null)
+        //if(this.mAuthTask != null)
         {
-            return;
+            //return;
         }
 
         // Reset errors.
@@ -166,8 +167,8 @@ public class AuthLogin extends AppCompatActivity
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             this.showProgress(true);
-            this.mAuthTask = new UserLoginTask(email, password);
-            this.mAuthTask.execute((Void) null);
+            //this.mAuthTask = new UserLoginTask(email, password);
+            //this.mAuthTask.execute((Void) null);
         }
     }
 
@@ -222,13 +223,13 @@ public class AuthLogin extends AppCompatActivity
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    private class UserLoginTask extends AsyncTask<Void, Void, Void>
+    private class UserLoginTasks extends AsyncTask<Void, Void, Void>
     {
         private final String mEmail;
         private final String mPassword;
         private RequestQueue queue;
 
-        UserLoginTask(String email, String password)
+        UserLoginTasks(String email, String password)
         {
             Timber.d("Constructor");
 
@@ -294,7 +295,7 @@ public class AuthLogin extends AppCompatActivity
                             {
                                 Timber.e(e);
                             }
-                            UserLoginTask.this.onPostExecute(success, message);
+                            //UserLoginTask.this.onPostExecute(success, message);
                         }
                     },
                     new Response.ErrorListener()
@@ -317,7 +318,7 @@ public class AuthLogin extends AppCompatActivity
                                     Timber.e(e1);
                                 }
                             }
-                            UserLoginTask.this.onPostExecute(false, null);
+                            //UserLoginTask.this.onPostExecute(false, null);
                         }
                     }
 
@@ -345,7 +346,7 @@ public class AuthLogin extends AppCompatActivity
         {
             Timber.d("onPostExecute");
 
-            AuthLogin.this.mAuthTask = null;
+            //AuthLogin.this.mAuthTask = null;
             AuthLogin.this.showProgress(false);
 
             if(message != null)
@@ -385,7 +386,7 @@ public class AuthLogin extends AppCompatActivity
         {
             Timber.d("onCancelled");
 
-            AuthLogin.this.mAuthTask = null;
+            //AuthLogin.this.mAuthTask = null;
             AuthLogin.this.showProgress(false);
         }
     }
