@@ -66,7 +66,7 @@ public class TokenDao
         {
             @Override public void onResponse(@NotNull Call<ResponseBody> call, @NotNull Response<ResponseBody> response)
             {
-                String message = "";
+                String message = null;
                 boolean success = false;
                 @Nullable ResponseBody body = response.body();
                 if(body != null)
@@ -77,7 +77,7 @@ public class TokenDao
                         JSONObject data = res.optJSONObject("data");
                         if(data != null)
                         {
-                            success = data.optInt("status") > 1;
+                            success = data.optInt("status") > 0;
                             message = data.optJSONArray("message").getString(0);
                         }
                     }
@@ -86,6 +86,7 @@ public class TokenDao
                         Timber.e(e);
                     }
                 }
+
                 if(success)
                 {
                     listener.tokenValid(token, State.TOKEN_VALID, message);
@@ -105,7 +106,20 @@ public class TokenDao
 
     public static void logoutAccount(Context context)
     {
+        Timber.d("logoutAccount");
+
         new UserLogoutTask(context).execute();
+    }
+
+    public static void storeToken(Context context, TokenOrm token)
+    {
+        Timber.d("storeToken");
+
+        SharedPreferences settings = context.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(context.getResources().getString(R.string.shared_preferences_authentication_token), token.getToken());
+        editor.putString(context.getResources().getString(R.string.shared_preferences_authentication_refresh), token.getRefresh());
+        editor.apply();
     }
 
 
