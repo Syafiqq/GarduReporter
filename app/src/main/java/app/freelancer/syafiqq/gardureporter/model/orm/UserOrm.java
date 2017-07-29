@@ -17,7 +17,7 @@ public class UserOrm
     private Integer id;
     @Nullable @SerializedName("identity")
     private String email;
-    @Nullable @SerializedName("tanggal_berakhir")
+    @Nullable @SerializedName("password")
     private String password;
 
     public UserOrm()
