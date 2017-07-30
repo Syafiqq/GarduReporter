@@ -16,4 +16,7 @@ public interface GarduService
 {
     @GET("/api/mobile/gardu/induk/find?code=C41AF")
     Call<ResponseBody> findGarduInduk();
+
+    @GET("/api/mobile/gardu/penyulang/find?code=B28FE")
+    Call<ResponseBody> findGarduPenyulang();
 }
