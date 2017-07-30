@@ -30,12 +30,14 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.controller.adapter.GarduIndukAdapter;
 import app.freelancer.syafiqq.gardureporter.controller.adapter.GarduPenyulangAdapter;
+import app.freelancer.syafiqq.gardureporter.controller.adapter.JenisGarduAdapter;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.BooleanObserver;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.ObservableLocation;
 import app.freelancer.syafiqq.gardureporter.model.dao.GarduDao;
@@ -44,6 +46,7 @@ import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
 import app.freelancer.syafiqq.gardureporter.model.gson.serializer.custom.Location14DigitSerializer;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.JenisGarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import com.android.volley.AuthFailureError;
@@ -112,6 +115,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private boolean isSubmitRequested;
     private SearchableSpinner garduInduk;
     private SearchableSpinner garduPenyulang;
+    private Spinner jenisGardu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -151,6 +155,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
         this.garduInduk = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_induk);
         this.garduPenyulang = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_penyulang);
+        this.jenisGardu = (Spinner) findViewById(R.id.content_dashboard_spinner_jenisgardu);
         final ImageButton garduIndukSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_induk_refresh);
         final ImageButton garduPenyulangSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_penyulang_refresh);
         this.isSubmitRequested = false;
@@ -211,8 +216,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         final ArrayAdapter<GarduIndukOrm> garduIndukAdapter = new GarduIndukAdapter(super.getApplicationContext(), android.R.layout.simple_spinner_item, new ArrayList<GarduIndukOrm>());
         final ArrayAdapter<GarduPenyulangOrm> garduPenyulangAdapter = new GarduPenyulangAdapter(super.getApplicationContext(), android.R.layout.simple_spinner_item, new ArrayList<GarduPenyulangOrm>());
+        final ArrayAdapter<JenisGarduOrm> jenisGarduAdapter = new JenisGarduAdapter(super.getApplicationContext(), android.R.layout.simple_spinner_item, new JenisGarduOrm[] {
+                new JenisGarduOrm("Portal", "Portal")
+                , new JenisGarduOrm("Cantol", "Cantol")
+        });
         garduIndukAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         garduPenyulangAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        jenisGarduAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         // attaching data adapter to spinner
         this.garduInduk.setAdapter(garduIndukAdapter);
@@ -221,6 +231,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.garduPenyulang.setAdapter(garduPenyulangAdapter);
         this.garduPenyulang.setTitle("Select Gardu Penyulang");
         this.garduPenyulang.setPositiveButton("OK");
+        this.jenisGardu.setAdapter(jenisGarduAdapter);
 
         garduIndukSync.setOnClickListener(new View.OnClickListener()
         {

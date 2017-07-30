@@ -33,4 +33,7 @@
     <string name="content_dashboard_accuracy_label" formatted="true">GPS Accurracy : %.1f</string>
     <string name="error_connect_to_location_api">Cannot connect to location service</string>
     <string name="error_no_location_retrieved">Cannot locate device</string>
+    <string name="content_dashboard_textview_induk">Gardu Induk</string>
+    <string name="content_dashboard_textview_penyulang">Gardu Penyulang</string>
+    <string name="content_dashboard_textview_jenisgardu">Jenis Gardu</string>
 </resources>
