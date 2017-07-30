@@ -10,6 +10,7 @@
     <string name="command_ok">OK</string>
     <string name="command_setting">Setting</string>
     <string name="global_toast_error_sending_to_server">Error when sending data to server</string>
+    <string name="global_toast_error_retrieve_from_server">Error when retrieving data from server</string>
     <string name="global_toast_success_sending_to_server">Data successfully send to server</string>
     <string name="content_splash_screen_title_gardu">Gardu</string>
     <string name="content_splash_screen_title_reporter">Reporter</string>
