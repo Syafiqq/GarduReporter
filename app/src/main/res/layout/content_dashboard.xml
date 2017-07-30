@@ -22,6 +22,28 @@
             android:layout_marginBottom="8dp"
             android:visibility="gone" />
 
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <com.toptoche.searchablespinnerlibrary.SearchableSpinner
+                android:id="@+id/content_dashboard_searchablespinner_induk"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical" />
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@android:drawable/stat_notify_sync"
+                android:id="@+id/content_dashboard_imagebutton_induk_refresh"
+                android:layout_gravity="center_vertical" />
+
+    </LinearLayout>
+
+
     <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
