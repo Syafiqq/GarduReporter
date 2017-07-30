@@ -12,6 +12,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
 import app.freelancer.syafiqq.gardureporter.model.service.GarduService;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import com.google.gson.Gson;
@@ -33,9 +34,9 @@ import timber.log.Timber;
 
 public class GarduDao
 {
-    public static void findAll(final Context context, final GarduDao.GarduIndukRequestListener listener)
+    public static void findAllInduk(final Context context, final GarduRequestListener<List<GarduIndukOrm>> listener)
     {
-        Timber.d("findAll");
+        Timber.d("findAllInduk");
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
@@ -83,27 +84,93 @@ public class GarduDao
                 }
                 if((success > 0))
                 {
-                    listener.onRequestSuccessful(garduInduk, AuthDao.LoginState.SUCCESS, message);
+                    listener.onRequestSuccessful(garduInduk, RequestState.SUCCESS, message);
                 }
                 else
                 {
-                    listener.onRequestFailed(AuthDao.LoginState.FAILED, message);
+                    listener.onRequestFailed(RequestState.FAILED, message);
                 }
             }
 
             @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable throwable)
             {
                 Timber.e(throwable);
-                listener.onRequestFailed(AuthDao.LoginState.FAILED, context.getResources().getString(R.string.global_toast_error_retrieve_from_server));
+                listener.onRequestFailed(RequestState.FAILED, context.getResources().getString(R.string.global_toast_error_retrieve_from_server));
             }
         });
     }
 
-    public interface GarduIndukRequestListener
+    public static void findAllPenyulang(final Context context, final GarduRequestListener<List<GarduPenyulangOrm>> listener)
+    {
+        Timber.d("findAllPenyulang");
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(Setting.Networking.getReservedClient(context, true))
+                .build();
+        @NotNull final GarduService services = retrofit.create(GarduService.class);
+        services.findGarduPenyulang().enqueue(new Callback<ResponseBody>()
+        {
+            @Override public void onResponse(@NotNull Call<ResponseBody> call, @NotNull Response<ResponseBody> response)
+            {
+                String message = null;
+                int success = 0;
+                List<GarduPenyulangOrm> garduPenyulang = new ArrayList<>();
+                @Nullable ResponseBody body = response.body();
+                if(body != null)
+                {
+                    try
+                    {
+                        JSONObject res = new JSONObject(body.string());
+                        JSONObject data = res.optJSONObject("data");
+                        if(data != null)
+                        {
+                            success = data.optInt("status");
+                            JSONArray messages = data.optJSONArray("message");
+                            if(messages != null)
+                            {
+                                message = messages.optString(0);
+                            }
+                            JSONArray garduObj = data.optJSONArray("gardu_penyulang");
+                            if(garduObj != null)
+                            {
+                                Gson gson = new Gson();
+                                for(int i = -1, is = garduObj.length(); ++i < is; )
+                                {
+                                    garduPenyulang.add(gson.fromJson(garduObj.optString(i), GarduPenyulangOrm.class));
+                                }
+                            }
+                        }
+                    }
+                    catch(IOException | JSONException e)
+                    {
+                        Timber.e(e);
+                    }
+                }
+                if((success > 0))
+                {
+                    listener.onRequestSuccessful(garduPenyulang, RequestState.SUCCESS, message);
+                }
+                else
+                {
+                    listener.onRequestFailed(RequestState.FAILED, message);
+                }
+            }
+
+            @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable throwable)
+            {
+                Timber.e(throwable);
+                listener.onRequestFailed(RequestState.FAILED, context.getResources().getString(R.string.global_toast_error_retrieve_from_server));
+            }
+        });
+    }
+
+    public interface GarduRequestListener<T>
     {
         void onRequestFailed(int status, String message);
 
-        void onRequestSuccessful(List<GarduIndukOrm> gardu, int status, String message);
+        void onRequestSuccessful(T response, int status, String message);
     }
 
     public static class RequestState
