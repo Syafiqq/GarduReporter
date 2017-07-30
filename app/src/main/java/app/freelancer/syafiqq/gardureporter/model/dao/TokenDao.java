@@ -59,7 +59,7 @@ public class TokenDao
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
                 .addConverterFactory(GsonConverterFactory.create())
-                .client(Setting.Networking.getReservedClient(context))
+                .client(Setting.Networking.getReservedClient(context, false))
                 .build();
         @NotNull final AuthService authService = retrofit.create(AuthService.class);
         authService.tokenCheck(token).enqueue(new Callback<ResponseBody>()
@@ -120,6 +120,17 @@ public class TokenDao
         editor.putString(context.getResources().getString(R.string.shared_preferences_authentication_token), token.getToken());
         editor.putString(context.getResources().getString(R.string.shared_preferences_authentication_refresh), token.getRefresh());
         editor.apply();
+    }
+
+    public static TokenOrm retrieveToken(Context context)
+    {
+        Timber.d("retrieveToken");
+
+        @NotNull final SharedPreferences settings = context.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
+        final String token = settings.getString(context.getResources().getString(R.string.shared_preferences_authentication_token), null);
+        final String refresh = settings.getString(context.getResources().getString(R.string.shared_preferences_authentication_refresh), null);
+
+        return new TokenOrm(token, refresh);
     }
 
 
