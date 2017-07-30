@@ -38,7 +38,7 @@ public class AuthDao
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
                 .addConverterFactory(GsonConverterFactory.create())
-                .client(Setting.Networking.getReservedClient(context))
+                .client(Setting.Networking.getReservedClient(context, false))
                 .build();
         @NotNull final AuthService authService = retrofit.create(AuthService.class);
         authService.login("admin", user).enqueue(new Callback<ResponseBody>()
