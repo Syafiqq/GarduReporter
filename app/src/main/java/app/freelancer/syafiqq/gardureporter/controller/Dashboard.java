@@ -25,18 +25,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.controller.adapter.GarduIndukAdapter;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.BooleanObserver;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.ObservableLocation;
+import app.freelancer.syafiqq.gardureporter.model.dao.GarduDao;
 import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
 import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
 import app.freelancer.syafiqq.gardureporter.model.gson.serializer.custom.Location14DigitSerializer;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
 import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
 import com.android.volley.AuthFailureError;
@@ -60,8 +65,11 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Observable;
@@ -100,6 +108,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private Handler handler;
     private Runnable asyncOverrideLocationRequest;
     private boolean isSubmitRequested;
+    private SearchableSpinner garduInduk;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -137,6 +146,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
         this.locationRequestToggle = (Switch) findViewById(R.id.content_dashboard_switch_location_accuracy);
         this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
+        this.garduInduk = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_induk);
+        final ImageButton garduIndukSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_induk_refresh);
         this.isSubmitRequested = false;
 
         this.updateAccuracy(this.location.getLocation());
@@ -192,6 +203,44 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         });
         this.location.addObserver(this.accuracyObserver);
         this.service.availability.addObserver(this.serviceObserver);
+
+        final ArrayAdapter<GarduIndukOrm> garduIndukAdapter = new GarduIndukAdapter(super.getApplicationContext(), android.R.layout.simple_spinner_item, new ArrayList<GarduIndukOrm>());
+        // Drop down layout style - list view with radio button
+        garduIndukAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        this.garduInduk.setAdapter(garduIndukAdapter);
+        this.garduInduk.setTitle("Select Item");
+        this.garduInduk.setPositiveButton("OK");
+
+        garduIndukSync.setOnClickListener(new View.OnClickListener()
+        {
+            @Override public void onClick(View view)
+            {
+                GarduDao.findAll(Dashboard.super.getApplicationContext(), new GarduDao.GarduIndukRequestListener()
+                {
+                    @Override public void onRequestFailed(int status, String message)
+                    {
+                        Timber.d("onRequestFailed");
+
+                        if(message != null)
+                        {
+                            Toast.makeText(Dashboard.this, "message", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override public void onRequestSuccessful(List<GarduIndukOrm> gardu, int status, String message)
+                    {
+                        Timber.d("onRequestSuccessful");
+
+                        ((GarduIndukAdapter) garduIndukAdapter).update(gardu);
+                        garduIndukAdapter.notifyDataSetChanged();
+                        this.onRequestFailed(status, message);
+                    }
+                });
+            }
+        });
+        garduIndukSync.callOnClick();
     }
 
     @Override protected void onResume()
