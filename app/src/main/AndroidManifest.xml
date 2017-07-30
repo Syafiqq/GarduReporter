@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         package="app.freelancer.syafiqq.gardureporter">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -13,7 +14,8 @@
             android:label="@string/application_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            tools:replace="android:label">
         <activity
                 android:name=".controller.Dashboard"
                 android:label="@string/activity_dashboard_title"
@@ -32,8 +34,7 @@
         <activity
                 android:name=".controller.AuthLogin"
                 android:label="@string/activity_auth_login_title"
-                android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+                android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
