@@ -11,6 +11,8 @@ package app.freelancer.syafiqq.gardureporter.model.util;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
+import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -26,6 +28,7 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import org.jetbrains.annotations.NotNull;
 import timber.log.Timber;
 
 public class Setting
@@ -116,7 +119,7 @@ public class Setting
             };
         }
 
-        public static OkHttpClient getReservedClient(Context context) throws NullPointerException
+        public static OkHttpClient getReservedClient(final Context context, final boolean needToken) throws NullPointerException
         {
             return new okhttp3.OkHttpClient.Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
@@ -131,15 +134,23 @@ public class Setting
                         {
                             Request original = chain.request();
 
-                            Request request = original.newBuilder()
-                                                      .header("X-Requested-With", "XMLHttpRequest")
-                                                      .header("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate())
-                                                      .header("X-Access-Guard", Setting.getOurInstance().getNetworking().getGuard())
-                                                      .header("Content-Type", "application/json; charset=utf-8")
-                                                      .method(original.method(), original.body())
-                                                      .build();
+                            Request.Builder builder = original.newBuilder()
+                                                              .header("X-Requested-With", "XMLHttpRequest")
+                                                              .header("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate())
+                                                              .header("X-Access-Guard", Setting.getOurInstance().getNetworking().getGuard())
+                                                              .header("Content-Type", "application/json; charset=utf-8");
+                            if(needToken)
+                            {
+                                @NotNull TokenOrm token = TokenDao.retrieveToken(context);
+                                if(token.getToken() != null)
+                                {
+                                    builder = builder.header("X-Access-Token", token.getToken());
+                                }
+                            }
 
-                            return chain.proceed(request);
+                            builder = builder.method(original.method(), original.body());
+
+                            return chain.proceed(builder.build());
                         }
                     })
                     .build();
