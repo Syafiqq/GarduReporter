@@ -8,7 +8,9 @@ package app.freelancer.syafiqq.gardureporter.model.orm;
  * Github       : syafiqq
  */
 
+import android.location.Location;
 import com.google.gson.annotations.SerializedName;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class LocationOrm
@@ -26,6 +28,11 @@ public class LocationOrm
     {
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public LocationOrm(@NotNull Location location)
+    {
+        this(location.getLatitude(), location.getLongitude());
     }
 
     public Double getLatitude()
