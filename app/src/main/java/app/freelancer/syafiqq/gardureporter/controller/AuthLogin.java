@@ -202,14 +202,14 @@ public class AuthLogin extends AppCompatActivity implements AuthDao.LoginRequest
 
     @Override public void onLoginFailed(int status, String message)
     {
-        Timber.d("onRequestFailed");
+        Timber.d("onLoginFailed");
 
         this.postLogin(false, message);
     }
 
     @Override public void onLoginSuccessful(TokenOrm token, int status, String message)
     {
-        Timber.d("onRequestSuccessful");
+        Timber.d("onLoginSuccessful");
 
         TokenDao.storeToken(this.getApplicationContext(), token);
         this.postLogin(status > 0, message);
