@@ -147,11 +147,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         Timber.d("onStart");
 
         super.onStart();
-        this.substation = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_substation);
-        this.voltage = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_voltage);
-        this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_current);
+        this.substation = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_nogardu);
+        this.voltage = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_daya);
+        this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_tap);
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
-        this.locationRequestToggle = (Switch) findViewById(R.id.content_dashboard_switch_location_accuracy);
+        this.locationRequestToggle = (Switch) findViewById(R.id.content_dashboard_switch_location);
         this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
         this.garduInduk = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_induk);
         this.garduPenyulang = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_penyulang);
