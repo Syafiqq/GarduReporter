@@ -188,7 +188,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/content_dashboard_textview_daya_label"
-                        android:inputType="numberDecimal" />
+                        android:inputType="numberSigned" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -213,7 +213,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/content_dashboard_textview_tap_label"
-                        android:inputType="numberDecimal" />
+                        android:inputType="numberSigned" />
 
 
             </android.support.design.widget.TextInputLayout>
@@ -227,7 +227,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/content_dashboard_textview_jurusan_label"
-                        android:inputType="numberDecimal" />
+                        android:inputType="numberSigned" />
 
 
             </android.support.design.widget.TextInputLayout>
