@@ -23,7 +23,7 @@
 
         <activity
                 android:name=".controller.SplashScreen"
-                android:label="@string/activity_splash_screen_title"
+                android:label="@string/application_name"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
