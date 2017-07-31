@@ -8,9 +8,12 @@ package app.freelancer.syafiqq.gardureporter.model.service;
  * Github       : syafiqq
  */
 
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduOrm;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 
 public interface GarduService
 {
@@ -19,4 +22,7 @@ public interface GarduService
 
     @GET("/api/mobile/gardu/penyulang/find?code=B28FE")
     Call<ResponseBody> findGarduPenyulang();
+
+    @POST("/api/mobile/gardu/index/insert")
+    Call<ResponseBody> sendGardu(@Body GarduOrm gardu);
 }
