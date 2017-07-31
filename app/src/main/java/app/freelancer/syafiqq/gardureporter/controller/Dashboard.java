@@ -189,7 +189,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                 {
                     Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.error_no_location_retrieved), Toast.LENGTH_SHORT).show();
                     Dashboard.this.isSubmitRequested = false;
-                    Dashboard.this.service.removeLocationUpdates(Dashboard.this);
+                    //Dashboard.this.service.removeLocationUpdates(Dashboard.this);
                     Dashboard.this.shiftUISubmit(true);
                 }
                 else
@@ -395,13 +395,16 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         }
         else
         {
-            this.service.requestLocationUpdates(this);
+            if(!this.service.isAlreadyRequested)
+            {
+                this.service.requestLocationUpdates(this);
+            }
         }
     }
 
     private void onLocationRequestSwitchedOff()
     {
-        Timber.d("onLocationRequestSwitchedOn");
+        Timber.d("onLocationRequestSwitchedOff");
 
         this.shiftUISubmit(true);
         this.location.setChecked(false);
@@ -526,20 +529,29 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         report.setSerial(this.serial.getText().toString());
         if(TextUtils.isEmpty(this.daya.getText()))
         {
-            this.daya.setText("0");
+            report.setDaya(null);
+        }
+        else
+        {
+            report.setDaya(Integer.parseInt(this.daya.getText().toString()));
         }
         if(TextUtils.isEmpty(this.tap.getText()))
         {
-            this.tap.setText("0");
+            report.setTap(null);
+        }
+        else
+        {
+            report.setTap(Integer.parseInt(this.tap.getText().toString()));
         }
         if(TextUtils.isEmpty(this.jurusan.getText()))
         {
-            this.jurusan.setText("0");
+            report.setJurusan(null);
         }
-        report.setDaya(Integer.parseInt(this.daya.getText().toString()));
+        else
+        {
+            report.setJurusan(Integer.parseInt(this.jurusan.getText().toString()));
+        }
         report.setFasa(this.fasa.getText().toString());
-        report.setTap(Integer.parseInt(this.tap.getText().toString()));
-        report.setJurusan(Integer.parseInt(this.jurusan.getText().toString()));
 
         if(!checkPermissions())
         {
@@ -547,7 +559,14 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         }
         else
         {
-            this.location.setChecked(true);
+            if(!this.location.isChecked())
+            {
+                this.location.setChecked(true);
+            }
+            else
+            {
+                this.onLocationRequestSwitchedOn();
+            }
             this.isSubmitRequested = true;
             this.handler.postDelayed(this.asyncOverrideLocationRequest, SECONDS_DELAYED * 1000);
         }
@@ -580,9 +599,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
     private void prepareSubmit(@NotNull Location location)
     {
+        Timber.d("prepareSubmit");
+
         this.handler.removeCallbacks(this.asyncOverrideLocationRequest);
         this.isSubmitRequested = false;
-        this.service.removeLocationUpdates(this);
+        //this.service.removeLocationUpdates(this);
 
         final GarduOrm report = Dashboard.this.report;
         if((report.getLatitude() == null) || (report.getLongitude() == null))
@@ -596,6 +617,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private void doSubmit(final GarduOrm report)
     {
         Timber.d("doSumbit");
+
         GarduDao.sendGardu(super.getApplicationContext(), report, new GarduDao.GarduRequestListener()
         {
             @Override public void onRequestFailed(int status, String message)
@@ -615,86 +637,10 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                 Timber.d("onRequestSuccessful");
 
                 this.onRequestFailed(status, message);
-                Dashboard.this.onLocationRequestSwitchedOff();
+                Dashboard.this.location.setChecked(false);
+                Dashboard.this.cleanForm();
             }
         });
-
-
-/*        @NotNull final SharedPreferences settings = super.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
-        final String token = settings.getString(super.getResources().getString(R.string.shared_preferences_authentication_token), null);
-
-        Bag bag = new Bag();
-        bag.data = report;
-        bag.token = token;
-        bag.guard = Setting.getOurInstance().getNetworking().getGuard();
-
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(app.freelancer.syafiqq.gardureporter.model.dao.Location.class, new Location14DigitSerializer());
-        Gson gson = gsonBuilder.create();
-        String data = gson.toJson(bag);
-
-        if(this.queue == null)
-        {
-            this.queue = Volley.newRequestQueue(this);
-        }
-        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/insert?lang=en";*/
-
-        // Request a string response from the provided URL.
-        /*final RawJsonObjectRequest request = new RawJsonObjectRequest(
-                Request.Method.POST,
-                url,
-                data,
-                new Response.Listener<JSONObject>()
-                {
-                    @Override
-                    public void onResponse(JSONObject response)
-                    {
-                        Timber.d(response.toString());
-                        Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_success_sending_to_server), Toast.LENGTH_SHORT).show();
-                        Dashboard.this.shiftUISubmit(true);
-                        Dashboard.this.onLocationRequestSwitchedOff();
-                    }
-                },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error)
-                    {
-                        Timber.e(error);
-                        final NetworkResponse response = error.networkResponse;
-                        if(error instanceof ServerError && response != null)
-                        {
-                            try
-                            {
-                                final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                                Timber.e(res);
-                                Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.global_toast_error_sending_to_server), Toast.LENGTH_SHORT).show();
-                            }
-                            catch(UnsupportedEncodingException e1)
-                            {
-                                Timber.e(e1);
-                            }
-                        }
-                        Dashboard.this.shiftUISubmit(true);
-                    }
-                }
-
-        )
-        {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError
-            {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("X-Requested-With", "XMLHttpRequest");
-                headers.put("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate());
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-        };*/
-        // Add the request to the RequestQueue.
-
-        //request.setTag(this.sendTag);
-        //this.queue.add(request);
     }
 
     private void shiftUISubmit(boolean finished)
@@ -713,6 +659,18 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         }
     }
 
+    private void cleanForm()
+    {
+        this.noGardu.getText().clear();
+        this.alamat.getText().clear();
+        this.merk.getText().clear();
+        this.serial.getText().clear();
+        this.daya.getText().clear();
+        this.fasa.getText().clear();
+        this.tap.getText().clear();
+        this.jurusan.getText().clear();
+    }
+
     private final class LocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
     {
         /**
@@ -727,7 +685,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         private static final float DISTANCE_ERROR_THRESHOLD_IN_METERS = 20;
         public BooleanObserver availability;
-        public boolean isAlreadyRequested;
         /**
          * Provides the entry point to Google Play services.
          */
@@ -745,6 +702,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
          * Represents a geographical oLocation.
          */
         protected Location mCurrentLocation;
+        private boolean isAlreadyRequested;
         private LocationManager locationManager;
 
         public LocationService()
