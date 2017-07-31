@@ -94,28 +94,37 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private static final int REQUEST_CHECK_SETTINGS = 0x01;
 
     private LocationService service;
-    private ObservableLocation location;
+    private ObservableLocation oLocation;
 
     // UI
-    private TextInputEditText substation;
-    private TextInputEditText voltage;
-    private TextInputEditText current;
-    private Button submit;
-    private Switch locationRequestToggle;
     private ProgressBar progress;
+
+    private SearchableSpinner garduInduk;
+    private SearchableSpinner garduPenyulang;
+    private Spinner jenisGardu;
+    private Switch location;
+    private TextInputEditText noGardu;
+    private TextInputEditText alamat;
+    private TextInputEditText merk;
+    private TextInputEditText series;
+    private TextInputEditText daya;
+    private TextInputEditText fasa;
+    private TextInputEditText tap;
+    private TextInputEditText jurusan;
+    private Button submit;
+
     //DAO
     private SubStationReport report;
     private RequestQueue queue;
     private String sendTag;
+
     //Observer
     private Observer accuracyObserver;
     private Observer serviceObserver;
     private Handler handler;
     private Runnable asyncOverrideLocationRequest;
     private boolean isSubmitRequested;
-    private SearchableSpinner garduInduk;
-    private SearchableSpinner garduPenyulang;
-    private Spinner jenisGardu;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -129,7 +138,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         this.service = new LocationService();
         this.report = new SubStationReport();
-        this.location = new ObservableLocation(null);
+        this.oLocation = new ObservableLocation(null);
         this.handler = new Handler();
         this.sendTag = "REPORT_SEND";
 
@@ -147,20 +156,28 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         Timber.d("onStart");
 
         super.onStart();
-        this.substation = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_nogardu);
-        this.voltage = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_daya);
-        this.current = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_tap);
-        this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
-        this.locationRequestToggle = (Switch) findViewById(R.id.content_dashboard_switch_location);
-        this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
+
         this.garduInduk = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_induk);
         this.garduPenyulang = (SearchableSpinner) findViewById(R.id.content_dashboard_searchablespinner_penyulang);
         this.jenisGardu = (Spinner) findViewById(R.id.content_dashboard_spinner_jenisgardu);
+        this.location = (Switch) findViewById(R.id.content_dashboard_switch_location);
+        this.noGardu = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_nogardu);
+        this.alamat = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_alamat);
+        this.merk = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_merk);
+        this.series = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_series);
+        this.daya = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_daya);
+        this.fasa = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_fasa);
+        this.tap = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_tap);
+        this.jurusan = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_jurusan);
+        this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
+
+        this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
         final ImageButton garduIndukSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_induk_refresh);
         final ImageButton garduPenyulangSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_penyulang_refresh);
+
         this.isSubmitRequested = false;
 
-        this.updateAccuracy(this.location.getLocation());
+        this.updateAccuracy(this.oLocation.getLocation());
         this.accuracyObserver = new Observer()
         {
             @Override public void update(Observable observable, Object o)
@@ -181,7 +198,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void run()
             {
-                @Nullable final Location location = Dashboard.this.location.getLocation();
+                @Nullable final Location location = Dashboard.this.oLocation.getLocation();
                 if(location == null)
                 {
                     Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.error_no_location_retrieved), Toast.LENGTH_SHORT).show();
@@ -197,7 +214,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         };
 
         this.submit.setOnClickListener(this);
-        this.locationRequestToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        this.location.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
             @Override public void onCheckedChanged(CompoundButton compoundButton, boolean checked)
             {
@@ -211,7 +228,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                 }
             }
         });
-        this.location.addObserver(this.accuracyObserver);
+        this.oLocation.addObserver(this.accuracyObserver);
         this.service.availability.addObserver(this.serviceObserver);
 
         final ArrayAdapter<GarduIndukOrm> garduIndukAdapter = new GarduIndukAdapter(super.getApplicationContext(), android.R.layout.simple_spinner_item, new ArrayList<GarduIndukOrm>());
@@ -304,7 +321,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         Timber.d("onStop");
 
-        this.location.deleteObserver(this.accuracyObserver);
+        this.oLocation.deleteObserver(this.accuracyObserver);
         this.service.availability.deleteObserver(this.accuracyObserver);
 
         super.onStop();
@@ -356,13 +373,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                 {
                     case Activity.RESULT_OK:
                     {
-                        Timber.d("User agreed to make required location settings changes.");
+                        Timber.d("User agreed to make required oLocation settings changes.");
                         // Nothing to do. startLocationupdates() gets called in onResume again.
                     }
                     break;
                     case Activity.RESULT_CANCELED:
                     {
-                        Timber.d("User chose not to make required location settings changes.");
+                        Timber.d("User chose not to make required oLocation settings changes.");
                     }
                     break;
                 }
@@ -379,7 +396,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         Timber.d("updateAccuracy");
 
-        this.locationRequestToggle.setText(String.format(Locale.getDefault(), super.getResources().getString(R.string.content_dashboard_accuracy_label), location == null ? Float.POSITIVE_INFINITY : location.getAccuracy()));
+        this.location.setText(String.format(Locale.getDefault(), super.getResources().getString(R.string.content_dashboard_accuracy_label), location == null ? Float.POSITIVE_INFINITY : location.getAccuracy()));
     }
 
     private void onLocationRequestSwitchedOn()
@@ -401,14 +418,14 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         Timber.d("onLocationRequestSwitchedOn");
 
         this.shiftUISubmit(true);
-        this.locationRequestToggle.setChecked(false);
+        this.location.setChecked(false);
         this.service.removeLocationUpdates(Dashboard.this);
-        this.location.setLocation(null);
+        this.oLocation.setLocation(null);
     }
 
 
     /*
-     * Returns the current state of the permissions needed.
+     * Returns the tap state of the permissions needed.
      */
     private boolean checkPermissions()
     {
@@ -514,16 +531,16 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.shiftUISubmit(false);
 
         final SubStationReport report1 = this.report;
-        report1.setSubstation(this.substation.getText().toString());
-        report1.setVoltage(Double.parseDouble(this.voltage.getText().toString()));
-        report1.setCurrent(Double.parseDouble(this.current.getText().toString()));
+        report1.setSubstation(this.noGardu.getText().toString());
+        report1.setVoltage(Double.parseDouble(this.daya.getText().toString()));
+        report1.setCurrent(Double.parseDouble(this.tap.getText().toString()));
         if(!checkPermissions())
         {
             requestPermissions();
         }
         else
         {
-            this.locationRequestToggle.setChecked(true);
+            this.location.setChecked(true);
             this.isSubmitRequested = true;
             this.handler.postDelayed(this.asyncOverrideLocationRequest, SECONDS_DELAYED * 1000);
         }
@@ -538,16 +555,16 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             Timber.d("Location [%.14g,%.14g] %s", location.getLatitude(), location.getLongitude(), location.getAccuracy());
             if(location.hasAccuracy())
             {
-                if((this.location.getLocation() == null ? Float.MAX_VALUE : this.location.getLocation().getAccuracy()) > location.getAccuracy())
+                if((this.oLocation.getLocation() == null ? Float.MAX_VALUE : this.oLocation.getLocation().getAccuracy()) > location.getAccuracy())
                 {
-                    this.location.setLocation(location);
+                    this.oLocation.setLocation(location);
                 }
 
                 if(this.isSubmitRequested)
                 {
-                    if(this.location.getLocation().getAccuracy() <= LocationService.DISTANCE_ERROR_THRESHOLD_IN_METERS)
+                    if(this.oLocation.getLocation().getAccuracy() <= LocationService.DISTANCE_ERROR_THRESHOLD_IN_METERS)
                     {
-                        this.prepareSubmit(this.location.getLocation());
+                        this.prepareSubmit(this.oLocation.getLocation());
                     }
                 }
             }
@@ -661,13 +678,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             this.progress.setVisibility(View.GONE);
             this.submit.setEnabled(true);
-            this.locationRequestToggle.setEnabled(true);
+            this.location.setEnabled(true);
         }
         else
         {
             this.progress.setVisibility(View.VISIBLE);
             this.submit.setEnabled(false);
-            this.locationRequestToggle.setEnabled(false);
+            this.location.setEnabled(false);
         }
     }
 
@@ -685,11 +702,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private final class LocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
     {
         /**
-         * The desired interval for location updates. Inexact. Updates may be more or less frequent.
+         * The desired interval for oLocation updates. Inexact. Updates may be more or less frequent.
          */
         private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7500;
         /**
-         * The fastest rate for active location updates. Updates will never be more frequent
+         * The fastest rate for active oLocation updates. Updates will never be more frequent
          * than this value.
          */
         private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
@@ -706,12 +723,12 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
          */
         protected LocationRequest locationRequest;
         /**
-         * Stores the types of location services the client is interested in using. Used for checking
-         * settings to determine if the device has optimal location settings.
+         * Stores the types of oLocation services the client is interested in using. Used for checking
+         * settings to determine if the device has optimal oLocation settings.
          */
         protected LocationSettingsRequest locationSettingsRequest;
         /**
-         * Represents a geographical location.
+         * Represents a geographical oLocation.
          */
         protected Location mCurrentLocation;
         private LocationManager locationManager;
@@ -736,7 +753,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         /**
          * Uses a {@link com.google.android.gms.location.LocationSettingsRequest.Builder} to build
          * a {@link com.google.android.gms.location.LocationSettingsRequest} that is used for checking
-         * if a device has the needed location settings.
+         * if a device has the needed oLocation settings.
          */
         protected void buildLocationSettingsRequest()
         {
@@ -768,7 +785,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                             {
                                 case LocationSettingsStatusCodes.SUCCESS:
                                 {
-                                    Timber.d("All location settings are satisfied.");
+                                    Timber.d("All oLocation settings are satisfied.");
                                     //noinspection MissingPermission
                                     LocationServices.FusedLocationApi.requestLocationUpdates(LocationService.this.apiClient, LocationService.this.locationRequest, listener);
                                     Dashboard.this.service.isAlreadyRequested = true;
@@ -777,7 +794,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                                 case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                                 {
                                     Timber.d("Location settings are not satisfied. Attempting to upgrade " +
-                                            "location settings ");
+                                            "oLocation settings ");
                                     try
                                     {
                                         /* Show the dialog by calling startResolutionForResult(), and check the
@@ -804,7 +821,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             }
             catch(SecurityException unlikely)
             {
-                Timber.e("Lost location permission. Could not request updates. " + unlikely);
+                Timber.e("Lost oLocation permission. Could not request updates. " + unlikely);
             }
         }
 
@@ -828,7 +845,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             }
             catch(SecurityException unlikely)
             {
-                Timber.e("Lost location permission. Could not remove updates. " + unlikely);
+                Timber.e("Lost oLocation permission. Could not remove updates. " + unlikely);
             }
         }
 
@@ -881,7 +898,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             }
             catch(SecurityException unlikely)
             {
-                Timber.e("Lost location permission." + unlikely);
+                Timber.e("Lost oLocation permission." + unlikely);
             }
         }
 
