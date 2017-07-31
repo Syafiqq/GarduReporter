@@ -172,10 +172,10 @@
                     android:layout_height="wrap_content">
 
                 <android.support.design.widget.TextInputEditText
-                        android:id="@+id/content_dashboard_edittext_series"
+                        android:id="@+id/content_dashboard_edittext_serial"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_dashboard_textview_series_label" />
+                        android:hint="@string/content_dashboard_textview_serial_label" />
 
             </android.support.design.widget.TextInputLayout>
 
