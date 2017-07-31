@@ -7,8 +7,9 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
+import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
-import app.freelancer.syafiqq.gardureporter.model.util.Token;
 import java.util.concurrent.CountDownLatch;
 import org.jetbrains.annotations.NotNull;
 import timber.log.Timber;
@@ -42,7 +43,7 @@ public class SplashScreen extends AppCompatActivity
         Timber.d("initializeTimber");
     }
 
-    private class TokenValidationTask extends AsyncTask<Void, Void, Void> implements Token.TokenExistenceListener, Token.TokenValidityListener
+    private class TokenValidationTask extends AsyncTask<Void, Void, Void> implements TokenDao.TokenExistenceListener, TokenDao.TokenValidityListener
     {
         private CountDownLatch checkLatch;
         private int state = 0x0;
@@ -60,7 +61,7 @@ public class SplashScreen extends AppCompatActivity
         {
             Timber.d("doInBackground");
 
-            Token.checkTokenExistence(SplashScreen.this, this);
+            TokenDao.checkTokenExistence(SplashScreen.this, this);
             try
             {
                 this.checkLatch.await();
@@ -83,7 +84,7 @@ public class SplashScreen extends AppCompatActivity
                     @NotNull Intent intent;
                     switch(TokenValidationTask.this.state)
                     {
-                        case Token.State.NEED_AUTH:
+                        case TokenDao.State.NEED_AUTH:
                         {
                             intent = new Intent(SplashScreen.this, AuthLogin.class);
                             intent.putExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
@@ -101,11 +102,11 @@ public class SplashScreen extends AppCompatActivity
             }, SECONDS_DELAYED * 1000);
         }
 
-        @Override public void tokenExists(String token)
+        @Override public void tokenExists(TokenOrm token)
         {
             Timber.d("tokenExists");
 
-            Token.checkValidity(SplashScreen.this, token, this);
+            TokenDao.checkValidity(SplashScreen.this, token, this);
         }
 
         @Override public void tokenNotExists(int state)
@@ -116,18 +117,18 @@ public class SplashScreen extends AppCompatActivity
             this.checkLatch.countDown();
         }
 
-        @Override public void tokenValid(String token, int status, String message)
+        @Override public void tokenValid(TokenOrm token, int status, String message)
         {
             Timber.d("tokenValid");
 
             this.checkLatch.countDown();
         }
 
-        @Override public void tokenInvalid(String token, int status, String massage)
+        @Override public void tokenInvalid(TokenOrm token, int status, String massage)
         {
             Timber.d("tokenInvalid");
 
-            this.state = Token.State.NEED_AUTH;
+            this.state = TokenDao.State.NEED_AUTH;
             this.checkLatch.countDown();
         }
     }

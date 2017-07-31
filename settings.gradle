@@ -1,1 +1,3 @@
-include ':app'
+include ':app', ':searchablespinnerlibrary'
+project(':searchablespinnerlibrary').projectDir = new File(settingsDir, '../../../repos/miteshpithadiya/SearchableSpinner/searchablespinnerlibrary')
+

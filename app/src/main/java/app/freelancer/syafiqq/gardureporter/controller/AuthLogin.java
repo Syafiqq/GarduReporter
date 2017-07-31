@@ -4,8 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,43 +17,30 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.R;
-import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
+import app.freelancer.syafiqq.gardureporter.model.dao.AuthDao;
+import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
+import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.UserOrm;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.Volley;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import timber.log.Timber;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class AuthLogin extends AppCompatActivity
+public class AuthLogin extends AppCompatActivity implements AuthDao.LoginRequestListener
 {
     private static final String API_AUTH_LOGIN = "api_auth_login";
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
-
     // UI references.
     private EditText mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private UserOrm user;
     private int jumper;
 
     @Override
@@ -68,6 +53,7 @@ public class AuthLogin extends AppCompatActivity
 
         Intent intent = super.getIntent();
         this.jumper = intent.getIntExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
+        this.user = new UserOrm();
 
         // Set up the login form.
         this.mEmailView = (EditText) findViewById(R.id.activity_auth_login_edit_text_form_email);
@@ -109,11 +95,6 @@ public class AuthLogin extends AppCompatActivity
     private void attemptLogin()
     {
         Timber.d("attemptLogin");
-
-        if(this.mAuthTask != null)
-        {
-            return;
-        }
 
         // Reset errors.
         this.mEmailView.setError(null);
@@ -166,8 +147,9 @@ public class AuthLogin extends AppCompatActivity
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             this.showProgress(true);
-            this.mAuthTask = new UserLoginTask(email, password);
-            this.mAuthTask.execute((Void) null);
+            this.user.setEmail(email);
+            this.user.setPassword(password);
+            AuthDao.login(this.getApplicationContext(), this.user, this);
         }
     }
 
@@ -218,175 +200,60 @@ public class AuthLogin extends AppCompatActivity
         });
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    private class UserLoginTask extends AsyncTask<Void, Void, Void>
+    @Override public void onLoginFailed(int status, String message)
     {
-        private final String mEmail;
-        private final String mPassword;
-        private RequestQueue queue;
+        Timber.d("onLoginFailed");
 
-        UserLoginTask(String email, String password)
+        this.postLogin(false, message);
+    }
+
+    @Override public void onLoginSuccessful(TokenOrm token, int status, String message)
+    {
+        Timber.d("onLoginSuccessful");
+
+        TokenDao.storeToken(this.getApplicationContext(), token);
+        this.postLogin(status > 0, message);
+    }
+
+    private void postLogin(boolean success, String message)
+    {
+        Timber.d("postLogin");
+
+        AuthLogin.this.showProgress(false);
+
+        if(message != null)
         {
-            Timber.d("Constructor");
-
-            this.mEmail = email;
-            this.mPassword = password;
+            Toast.makeText(AuthLogin.this, message, Toast.LENGTH_SHORT).show();
         }
 
-        @Override
-        protected Void doInBackground(Void... params)
+        if(success)
         {
-            Timber.d("doInBackground");
-
-            if(this.queue == null)
+            @Nullable Intent intent;
+            switch(AuthLogin.this.jumper)
             {
-                this.queue = Volley.newRequestQueue(AuthLogin.this);
-            }
-            String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/login?lang=en";
-
-            final JSONObject entry = new JSONObject();
-            try
-            {
-                entry.put("identity", this.mEmail);
-                entry.put("password", this.mPassword);
-                entry.put("guard", Setting.getOurInstance().getNetworking().getGuard());
-            }
-            catch(JSONException e)
-            {
-                Timber.e(e);
-            }
-
-            // Request a string response from the provided URL.
-            final RawJsonObjectRequest request = new RawJsonObjectRequest(
-                    Request.Method.POST,
-                    url,
-                    entry.toString(),
-                    new Response.Listener<JSONObject>()
-                    {
-                        @Override
-                        public void onResponse(JSONObject response)
-                        {
-                            String message = null;
-                            boolean success = false;
-                            try
-                            {
-                                JSONObject data = response.getJSONObject("data");
-                                int status = data.getInt("status");
-                                JSONArray messages = data.getJSONArray("message");
-                                message = messages.getString(0);
-                                if(status == 1)
-                                {
-                                    JSONObject tokens = data.getJSONObject("token");
-                                    String token = tokens.getString("token");
-                                    String refresh = tokens.getString("refresh");
-                                    SharedPreferences settings = getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = settings.edit();
-                                    editor.putString(AuthLogin.super.getResources().getString(R.string.shared_preferences_authentication_token), token);
-                                    editor.putString(AuthLogin.super.getResources().getString(R.string.shared_preferences_authentication_refresh), refresh);
-                                    editor.apply();
-                                    success = true;
-                                }
-                            }
-                            catch(JSONException e)
-                            {
-                                Timber.e(e);
-                            }
-                            UserLoginTask.this.onPostExecute(success, message);
-                        }
-                    },
-                    new Response.ErrorListener()
-                    {
-                        @Override
-                        public void onErrorResponse(VolleyError error)
-                        {
-                            Timber.e(error);
-                            final NetworkResponse response = error.networkResponse;
-                            if(error instanceof ServerError && response != null)
-                            {
-                                try
-                                {
-                                    final String res = new String(response.data, HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                                    Timber.e(res);
-                                    Toast.makeText(AuthLogin.this, AuthLogin.super.getResources().getString(R.string.global_toast_error_sending_to_server), Toast.LENGTH_SHORT).show();
-                                }
-                                catch(UnsupportedEncodingException e1)
-                                {
-                                    Timber.e(e1);
-                                }
-                            }
-                            UserLoginTask.this.onPostExecute(false, null);
-                        }
-                    }
-
-            )
-            {
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError
+                case Setting.Jumper.CLASS_DASHBOARD:
                 {
-                    Map<String, String> headers = new HashMap<>();
-                    headers.put("X-Requested-With", "XMLHttpRequest");
-                    headers.put("X-Access-Permission", Setting.getOurInstance().getNetworking().getCertificate());
-                    headers.put("Content-Type", "application/json; charset=utf-8");
-                    return headers;
+                    intent = new Intent(AuthLogin.this, Dashboard.class);
                 }
-            };
-            // Add the request to the RequestQueue.
-
-            request.setTag(API_AUTH_LOGIN);
-            this.queue.add(request);
-
-            return null;
+                break;
+                default:
+                {
+                    intent = new Intent(AuthLogin.this, AuthLogin.class);
+                }
+                break;
+            }
+            AuthLogin.super.startActivity(intent);
+            AuthLogin.super.finish();
         }
-
-        protected void onPostExecute(final Boolean success, final String message)
+        else
         {
-            Timber.d("onPostExecute");
-
-            AuthLogin.this.mAuthTask = null;
-            AuthLogin.this.showProgress(false);
-
+            AuthLogin.this.mEmailView.setError(getString(R.string.error_incorrect_login));
+            AuthLogin.this.mPasswordView.setError(getString(R.string.error_incorrect_login));
+            AuthLogin.this.mEmailView.requestFocus();
             if(message != null)
             {
-                Toast.makeText(AuthLogin.this, message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
-
-            if(success)
-            {
-                @Nullable Intent intent = null;
-                switch(AuthLogin.this.jumper)
-                {
-                    case Setting.Jumper.CLASS_DASHBOARD:
-                    {
-                        intent = new Intent(AuthLogin.this, Dashboard.class);
-                    }
-                    break;
-                    default:
-                    {
-                        intent = new Intent(AuthLogin.this, AuthLogin.class);
-                    }
-                    break;
-                }
-                AuthLogin.super.startActivity(intent);
-                AuthLogin.super.finish();
-            }
-            else
-            {
-                AuthLogin.this.mEmailView.setError(getString(R.string.error_incorrect_login));
-                AuthLogin.this.mPasswordView.setError(getString(R.string.error_incorrect_login));
-                AuthLogin.this.mEmailView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-            Timber.d("onCancelled");
-
-            AuthLogin.this.mAuthTask = null;
-            AuthLogin.this.showProgress(false);
         }
     }
 }

@@ -1,18 +1,28 @@
 <resources>
-    <string name="application_name">Sub-Station Reporter</string>
+    <string name="application_name">S I A G A</string>
     <string name="activity_dashboard_title">Dashboard</string>
-    <string name="content_dashboard_textview_substation">Sub-Station</string>
-    <string name="content_dashboard_textview_voltage">Voltage</string>
-    <string name="content_dashboard_textview_current">Current</string>
+    <string name="content_dashboard_textview_induk_label">Gardu Induk</string>
+    <string name="content_dashboard_textview_penyulang_label">Gardu Penyulang</string>
+    <string name="content_dashboard_textview_jenisgardu_label">Jenis Gardu</string>
+    <string name="content_dashboard_textview_alamat_label">Alamat</string>
+    <string name="content_dashboard_textview_merk_label">Merk Trafo</string>
+    <string name="content_dashboard_textview_serial_label">No Seri Trafo</string>
+    <string name="content_dashboard_textview_fasa_label">Fasa</string>
+    <string name="content_dashboard_textview_jurusan_label">Jumlah Jurusan</string>
+    <string name="content_dashboard_textview_location_label">Lokasi</string>
+    <string name="content_dashboard_textview_nogardu_label">No Gardu</string>
+    <string name="content_dashboard_textview_daya_label">Daya Trafo</string>
+    <string name="content_dashboard_textview_tap_label">Tap</string>
     <string name="content_dashboard_button_submit">Submit</string>
     <string name="permission_rationale">Location permission is needed for core functionality</string>
     <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
     <string name="command_ok">OK</string>
     <string name="command_setting">Setting</string>
     <string name="global_toast_error_sending_to_server">Error when sending data to server</string>
+    <string name="global_toast_error_retrieve_from_server">Error when retrieving data from server</string>
     <string name="global_toast_success_sending_to_server">Data successfully send to server</string>
-    <string name="content_splash_screen_title_gardu">Gardu</string>
-    <string name="content_splash_screen_title_reporter">Reporter</string>
+    <string name="content_splash_screen_title_gardu">S I A G A</string>
+    <string name="content_splash_screen_title_reporter"></string>
     <string name="activity_splash_screen_title">Splash Screen</string>
     <string name="shared_preferences_authentication_token">token</string>
     <string name="shared_preferences_authentication_refresh">refresh</string>
@@ -29,7 +39,7 @@
     <string name="error_incorrect_login">Account is Invalid</string>
     <string name="common_auth_logout">Logout</string>
     <string name="content_dashboard_button_location_request">GPS</string>
-    <string name="content_dashboard_accuracy_label" formatted="true">GPS Accurracy : %.1f</string>
+    <string name="content_dashboard_accuracy_label" formatted="true">Akurasi GPS : %.2f</string>
     <string name="error_connect_to_location_api">Cannot connect to location service</string>
     <string name="error_no_location_retrieved">Cannot locate device</string>
 </resources>
