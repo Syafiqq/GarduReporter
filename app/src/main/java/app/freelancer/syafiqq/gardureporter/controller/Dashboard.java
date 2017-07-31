@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -21,6 +20,7 @@ import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,23 +41,13 @@ import app.freelancer.syafiqq.gardureporter.controller.adapter.JenisGarduAdapter
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.BooleanObserver;
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.ObservableLocation;
 import app.freelancer.syafiqq.gardureporter.model.dao.GarduDao;
-import app.freelancer.syafiqq.gardureporter.model.dao.SubStationReport;
 import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
-import app.freelancer.syafiqq.gardureporter.model.gson.serializer.custom.Location14DigitSerializer;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.JenisGarduOrm;
-import app.freelancer.syafiqq.gardureporter.model.request.RawJsonObjectRequest;
-import app.freelancer.syafiqq.gardureporter.model.util.Setting;
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
+import app.freelancer.syafiqq.gardureporter.model.orm.LocationOrm;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -68,20 +58,14 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 import timber.log.Timber;
 
 public class Dashboard extends AppCompatActivity implements View.OnClickListener, LocationListener
@@ -106,15 +90,15 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private TextInputEditText noGardu;
     private TextInputEditText alamat;
     private TextInputEditText merk;
-    private TextInputEditText series;
+    private TextInputEditText serial;
     private TextInputEditText daya;
     private TextInputEditText fasa;
     private TextInputEditText tap;
     private TextInputEditText jurusan;
     private Button submit;
 
-    //DAO
-    private SubStationReport report;
+    //ORM
+    private GarduOrm report;
     private RequestQueue queue;
     private String sendTag;
 
@@ -137,7 +121,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         super.setSupportActionBar(toolbar);
 
         this.service = new LocationService();
-        this.report = new SubStationReport();
+        this.report = new GarduOrm();
         this.oLocation = new ObservableLocation(null);
         this.handler = new Handler();
         this.sendTag = "REPORT_SEND";
@@ -164,7 +148,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.noGardu = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_nogardu);
         this.alamat = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_alamat);
         this.merk = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_merk);
-        this.series = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_series);
+        this.serial = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_serial);
         this.daya = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_daya);
         this.fasa = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_fasa);
         this.tap = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_tap);
@@ -198,6 +182,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void run()
             {
+                Timber.d("asyncOverrideLocationRequest");
+
                 @Nullable final Location location = Dashboard.this.oLocation.getLocation();
                 if(location == null)
                 {
@@ -254,11 +240,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void onClick(View view)
             {
-                GarduDao.findAllInduk(Dashboard.super.getApplicationContext(), new GarduDao.GarduRequestListener<List<GarduIndukOrm>>()
+                GarduDao.findAllInduk(Dashboard.super.getApplicationContext(), new GarduDao.GarduResponseListener<List<GarduIndukOrm>>()
                 {
-                    @Override public void onRequestFailed(int status, String message)
+                    @Override public void onResponseFailed(int status, String message)
                     {
-                        Timber.d("onRequestFailed");
+                        Timber.d("onResponseFailed");
 
                         if(message != null)
                         {
@@ -266,13 +252,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                         }
                     }
 
-                    @Override public void onRequestSuccessful(List<GarduIndukOrm> gardu, int status, String message)
+                    @Override public void onResponseSuccessful(List<GarduIndukOrm> gardu, int status, String message)
                     {
-                        Timber.d("onRequestSuccessful");
+                        Timber.d("onResponseSuccessful");
 
                         ((GarduIndukAdapter) garduIndukAdapter).update(gardu);
                         garduIndukAdapter.notifyDataSetChanged();
-                        this.onRequestFailed(status, message);
+                        this.onResponseFailed(status, message);
                     }
                 });
             }
@@ -281,11 +267,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void onClick(View view)
             {
-                GarduDao.findAllPenyulang(Dashboard.super.getApplicationContext(), new GarduDao.GarduRequestListener<List<GarduPenyulangOrm>>()
+                GarduDao.findAllPenyulang(Dashboard.super.getApplicationContext(), new GarduDao.GarduResponseListener<List<GarduPenyulangOrm>>()
                 {
-                    @Override public void onRequestFailed(int status, String message)
+                    @Override public void onResponseFailed(int status, String message)
                     {
-                        Timber.d("onRequestFailed");
+                        Timber.d("onResponseFailed");
 
                         if(message != null)
                         {
@@ -293,13 +279,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                         }
                     }
 
-                    @Override public void onRequestSuccessful(List<GarduPenyulangOrm> gardu, int status, String message)
+                    @Override public void onResponseSuccessful(List<GarduPenyulangOrm> gardu, int status, String message)
                     {
-                        Timber.d("onRequestSuccessful");
+                        Timber.d("onResponseSuccessful");
 
                         ((GarduPenyulangAdapter) garduPenyulangAdapter).update(gardu);
                         garduPenyulangAdapter.notifyDataSetChanged();
-                        this.onRequestFailed(status, message);
+                        this.onResponseFailed(status, message);
                     }
                 });
             }
@@ -530,10 +516,31 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         this.shiftUISubmit(false);
 
-        final SubStationReport report1 = this.report;
-        report1.setSubstation(this.noGardu.getText().toString());
-        report1.setVoltage(Double.parseDouble(this.daya.getText().toString()));
-        report1.setCurrent(Double.parseDouble(this.tap.getText().toString()));
+        final GarduOrm report = this.report;
+        report.setGarduInduk((GarduIndukOrm) this.garduInduk.getSelectedItem());
+        report.setGarduPenyulang((GarduPenyulangOrm) this.garduPenyulang.getSelectedItem());
+        report.setJenis((JenisGarduOrm) this.jenisGardu.getSelectedItem());
+        report.setNo(this.noGardu.getText().toString());
+        report.setAlamat(this.alamat.getText().toString());
+        report.setMerk(this.merk.getText().toString());
+        report.setSerial(this.serial.getText().toString());
+        if(TextUtils.isEmpty(this.daya.getText()))
+        {
+            this.daya.setText("0");
+        }
+        if(TextUtils.isEmpty(this.tap.getText()))
+        {
+            this.tap.setText("0");
+        }
+        if(TextUtils.isEmpty(this.jurusan.getText()))
+        {
+            this.jurusan.setText("0");
+        }
+        report.setDaya(Integer.parseInt(this.daya.getText().toString()));
+        report.setFasa(this.fasa.getText().toString());
+        report.setTap(Integer.parseInt(this.tap.getText().toString()));
+        report.setJurusan(Integer.parseInt(this.jurusan.getText().toString()));
+
         if(!checkPermissions())
         {
             requestPermissions();
@@ -577,25 +584,43 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.isSubmitRequested = false;
         this.service.removeLocationUpdates(this);
 
-        final SubStationReport report = Dashboard.this.report;
-        if(report.getLocation() == null)
+        final GarduOrm report = Dashboard.this.report;
+        if((report.getLatitude() == null) || (report.getLongitude() == null))
         {
-            report.setLocation(new app.freelancer.syafiqq.gardureporter.model.dao.Location(0., 0.));
+            report.setLocation(new LocationOrm(location));
         }
 
-        final app.freelancer.syafiqq.gardureporter.model.dao.Location reportLocation = report.getLocation();
-        if(reportLocation != null)
-        {
-            reportLocation.setLatitude(location.getLatitude());
-            reportLocation.setLongitude(location.getLongitude());
-        }
         this.doSubmit(Dashboard.this.report);
     }
 
-    private void doSubmit(final SubStationReport report)
+    private void doSubmit(final GarduOrm report)
     {
         Timber.d("doSumbit");
-        @NotNull final SharedPreferences settings = super.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
+        GarduDao.sendGardu(super.getApplicationContext(), report, new GarduDao.GarduRequestListener()
+        {
+            @Override public void onRequestFailed(int status, String message)
+            {
+                Timber.d("onRequestFailed");
+
+                if(message != null)
+                {
+                    Toast.makeText(Dashboard.this, message, Toast.LENGTH_SHORT).show();
+                }
+                Dashboard.this.shiftUISubmit(true);
+
+            }
+
+            @Override public void onRequestSuccessful(int status, String message)
+            {
+                Timber.d("onRequestSuccessful");
+
+                this.onRequestFailed(status, message);
+                Dashboard.this.onLocationRequestSwitchedOff();
+            }
+        });
+
+
+/*        @NotNull final SharedPreferences settings = super.getSharedPreferences(Setting.SharedPreferences.SHARED_PREFERENCES_AUTHENTICATION, Context.MODE_PRIVATE);
         final String token = settings.getString(super.getResources().getString(R.string.shared_preferences_authentication_token), null);
 
         Bag bag = new Bag();
@@ -612,10 +637,10 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             this.queue = Volley.newRequestQueue(this);
         }
-        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/insert?lang=en";
+        String url = Setting.getOurInstance().getNetworking().getDomain() + "/api/mobile/insert?lang=en";*/
 
         // Request a string response from the provided URL.
-        final RawJsonObjectRequest request = new RawJsonObjectRequest(
+        /*final RawJsonObjectRequest request = new RawJsonObjectRequest(
                 Request.Method.POST,
                 url,
                 data,
@@ -665,11 +690,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 return headers;
             }
-        };
+        };*/
         // Add the request to the RequestQueue.
 
-        request.setTag(this.sendTag);
-        this.queue.add(request);
+        //request.setTag(this.sendTag);
+        //this.queue.add(request);
     }
 
     private void shiftUISubmit(boolean finished)
@@ -685,17 +710,6 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             this.progress.setVisibility(View.VISIBLE);
             this.submit.setEnabled(false);
             this.location.setEnabled(false);
-        }
-    }
-
-    private static class Bag
-    {
-        private SubStationReport data;
-        private String token;
-        private String guard;
-
-        public Bag()
-        {
         }
     }
 
