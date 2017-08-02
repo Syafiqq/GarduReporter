@@ -1,3 +1,4 @@
-include ':app', ':searchablespinnerlibrary'
+include ':app', ':searchablespinnerlibrary', ':accordionlibrary'
 project(':searchablespinnerlibrary').projectDir = new File(settingsDir, '../../../repos/miteshpithadiya/SearchableSpinner/searchablespinnerlibrary')
+project(':accordionlibrary').projectDir = new File(settingsDir, '../../../repos/fenjuly/ToggleExpandLayout/library')
 
