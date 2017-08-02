@@ -217,5 +217,6 @@ public class Setting
         public static final String NAME = "jumper";
         public static final int CLASS_DASHBOARD = 0x01;
         public static final int CLASS_AUTH_LOGIN = 0x02;
+        public static final int CLASS_GARDU_INDEX_MEASUREMENT = 0x03;
     }
 }
