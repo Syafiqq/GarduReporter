@@ -87,12 +87,12 @@ public class SplashScreen extends AppCompatActivity
                         case TokenDao.State.NEED_AUTH:
                         {
                             intent = new Intent(SplashScreen.this, AuthLogin.class);
-                            intent.putExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
+                            intent.putExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_GARDU_INDEX_MEASUREMENT);
                         }
                         break;
                         default:
                         {
-                            intent = new Intent(SplashScreen.this, Dashboard.class);
+                            intent = new Intent(SplashScreen.this, GarduIndexMeasurement.class);
                         }
                         break;
                     }

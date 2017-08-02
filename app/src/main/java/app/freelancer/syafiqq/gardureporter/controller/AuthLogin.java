@@ -236,6 +236,11 @@ public class AuthLogin extends AppCompatActivity implements AuthDao.LoginRequest
                     intent = new Intent(AuthLogin.this, Dashboard.class);
                 }
                 break;
+                case Setting.Jumper.CLASS_GARDU_INDEX_MEASUREMENT:
+                {
+                    intent = new Intent(AuthLogin.this, GarduIndexMeasurement.class);
+                }
+                break;
                 default:
                 {
                     intent = new Intent(AuthLogin.this, AuthLogin.class);
