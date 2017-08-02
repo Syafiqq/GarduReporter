@@ -42,4 +42,5 @@
     <string name="content_dashboard_accuracy_label" formatted="true">Akurasi GPS : %.2f</string>
     <string name="error_connect_to_location_api">Cannot connect to location service</string>
     <string name="error_no_location_retrieved">Cannot locate device</string>
+    <string name="title_activity_gardu_index_measurement">Pengukuran</string>
 </resources>
