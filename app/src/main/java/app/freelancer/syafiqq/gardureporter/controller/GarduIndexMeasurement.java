@@ -1,12 +1,14 @@
 package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import app.freelancer.syafiqq.gardureporter.R;
+import com.fenjuly.mylibrary.ToggleExpandLayout;
+import com.kyleduo.switchbutton.SwitchButton;
 
 public class GarduIndexMeasurement extends AppCompatActivity
 {
@@ -18,17 +20,175 @@ public class GarduIndexMeasurement extends AppCompatActivity
         setContentView(R.layout.activity_gardu_index_measurement);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        final ToggleExpandLayout layout = (ToggleExpandLayout) findViewById(R.id.toogleLayout);
+        final ToggleExpandLayout layout2 = (ToggleExpandLayout) findViewById(R.id.toogleLayout2);
+        final ToggleExpandLayout layout3 = (ToggleExpandLayout) findViewById(R.id.toogleLayout3);
+        //final ToggleExpandLayout layout11 = (ToggleExpandLayout) findViewById(R.id.toogleLayout1);
+        SwitchButton switchButton = (SwitchButton) findViewById(R.id.switch_button);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
+        layout.setOnToggleTouchListener(new ToggleExpandLayout.OnToggleTouchListener()
         {
             @Override
-            public void onClick(View view)
+            public void onStartOpen(int height, int originalHeight)
             {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            }
+
+            @Override
+            public void onOpen()
+            {
+                int childCount = layout.getChildCount();
+                for(int i = 0; i < childCount; i++)
+                {
+                    View view = layout.getChildAt(i);
+                }
+            }
+
+            @Override
+            public void onStartClose(int height, int originalHeight)
+            {
+                int childCount = layout.getChildCount();
+                for(int i = 0; i < childCount; i++)
+                {
+                    View view = layout.getChildAt(i);
+                }
+            }
+
+            @Override
+            public void onClosed()
+            {
+
             }
         });
+
+        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if(isChecked)
+                {
+                    layout.open();
+                }
+                else
+                {
+                    layout.close();
+                }
+            }
+        });
+
+        SwitchButton switchButton2 = (SwitchButton) findViewById(R.id.switch_button2);
+
+        layout2.setOnToggleTouchListener(new ToggleExpandLayout.OnToggleTouchListener()
+        {
+            @Override
+            public void onStartOpen(int height, int originalHeight)
+            {
+            }
+
+            @Override
+            public void onOpen()
+            {
+                int childCount = layout2.getChildCount();
+                for(int i = 0; i < childCount; i++)
+                {
+                    View view = layout2.getChildAt(i);
+                }
+            }
+
+            @Override
+            public void onStartClose(int height, int originalHeight)
+            {
+                int childCount = layout2.getChildCount();
+                for(int i = 0; i < childCount; i++)
+                {
+                    View view = layout2.getChildAt(i);
+                }
+            }
+
+            @Override
+            public void onClosed()
+            {
+
+            }
+        });
+
+        switchButton2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if(isChecked)
+                {
+                    layout2.open();
+                }
+                else
+                {
+                    layout2.close();
+                }
+            }
+        });
+
+
+        SwitchButton switchButton3 = (SwitchButton) findViewById(R.id.switch_button3);
+
+        layout3.setOnToggleTouchListener(new ToggleExpandLayout.OnToggleTouchListener()
+        {
+            @Override
+            public void onStartOpen(int height, int originalHeight)
+            {
+            }
+
+            @Override
+            public void onOpen()
+            {
+                int childCount = layout3.getChildCount();
+                for(int i = 0; i < childCount; i++)
+                {
+                    View view = layout3.getChildAt(i);
+                }
+            }
+
+            @Override
+            public void onStartClose(int height, int originalHeight)
+            {
+                int childCount = layout3.getChildCount();
+                for(int i = 0; i < childCount; i++)
+                {
+                    View view = layout3.getChildAt(i);
+                }
+            }
+
+            @Override
+            public void onClosed()
+            {
+
+            }
+        });
+
+        switchButton3.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if(isChecked)
+                {
+                    Log.e("switchbutton open", "invoked");
+                    layout3.open();
+                }
+                else
+                {
+                    Log.e("switchbutton close", "invoked");
+                    layout3.close();
+                }
+            }
+        });
+
+    }
+
+    public float dp2px(float dp)
+    {
+        final float scale = getResources().getDisplayMetrics().density;
+        return dp * scale + 0.5f;
     }
 
 }
