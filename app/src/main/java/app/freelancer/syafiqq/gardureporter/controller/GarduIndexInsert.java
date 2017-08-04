@@ -68,9 +68,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
-public class Dashboard extends AppCompatActivity implements View.OnClickListener, LocationListener
+public class GarduIndexInsert extends AppCompatActivity implements View.OnClickListener, LocationListener
 {
-    private static final String TAG = Dashboard.class.getSimpleName();
+    private static final String TAG = GarduIndexInsert.class.getSimpleName();
 
     // Used in checking for runtime permissions.
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 0x22;
@@ -164,7 +164,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void update(Observable observable, Object o)
             {
-                Dashboard.this.updateAccuracy((Location) o);
+                GarduIndexInsert.this.updateAccuracy((Location) o);
             }
         };
         this.serviceObserver = new Observer()
@@ -172,8 +172,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             @Override public void update(Observable observable, Object o)
             {
                 BooleanObserver bool = (BooleanObserver) observable;
-                final boolean resultedPermission = Dashboard.this.checkPermissions() && bool.isBool();
-                Dashboard.this.shiftUISubmit(resultedPermission);
+                final boolean resultedPermission = GarduIndexInsert.this.checkPermissions() && bool.isBool();
+                GarduIndexInsert.this.shiftUISubmit(resultedPermission);
             }
         };
         this.asyncOverrideLocationRequest = new Runnable()
@@ -182,17 +182,17 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             {
                 Timber.d("asyncOverrideLocationRequest");
 
-                @Nullable final Location location = Dashboard.this.oLocation.getLocation();
+                @Nullable final Location location = GarduIndexInsert.this.oLocation.getLocation();
                 if(location == null)
                 {
-                    Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.error_no_location_retrieved), Toast.LENGTH_SHORT).show();
-                    Dashboard.this.isSubmitRequested = false;
-                    //Dashboard.this.service.removeLocationUpdates(Dashboard.this);
-                    Dashboard.this.shiftUISubmit(true);
+                    Toast.makeText(GarduIndexInsert.this, GarduIndexInsert.super.getResources().getString(R.string.error_no_location_retrieved), Toast.LENGTH_SHORT).show();
+                    GarduIndexInsert.this.isSubmitRequested = false;
+                    //GarduIndexInsert.this.service.removeLocationUpdates(GarduIndexInsert.this);
+                    GarduIndexInsert.this.shiftUISubmit(true);
                 }
                 else
                 {
-                    Dashboard.this.prepareSubmit(location);
+                    GarduIndexInsert.this.prepareSubmit(location);
                 }
             }
         };
@@ -204,11 +204,11 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             {
                 if(checked)
                 {
-                    Dashboard.this.onLocationRequestSwitchedOn();
+                    GarduIndexInsert.this.onLocationRequestSwitchedOn();
                 }
                 else
                 {
-                    Dashboard.this.onLocationRequestSwitchedOff();
+                    GarduIndexInsert.this.onLocationRequestSwitchedOff();
                 }
             }
         });
@@ -238,7 +238,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void onClick(View view)
             {
-                GarduDao.findAllInduk(Dashboard.super.getApplicationContext(), new GarduDao.GarduResponseListener<List<GarduIndukOrm>>()
+                GarduDao.findAllInduk(GarduIndexInsert.super.getApplicationContext(), new GarduDao.GarduResponseListener<List<GarduIndukOrm>>()
                 {
                     @Override public void onResponseFailed(int status, String message)
                     {
@@ -246,7 +246,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
                         if(message != null)
                         {
-                            Toast.makeText(Dashboard.this, message, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GarduIndexInsert.this, message, Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -265,7 +265,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             @Override public void onClick(View view)
             {
-                GarduDao.findAllPenyulang(Dashboard.super.getApplicationContext(), new GarduDao.GarduResponseListener<List<GarduPenyulangOrm>>()
+                GarduDao.findAllPenyulang(GarduIndexInsert.super.getApplicationContext(), new GarduDao.GarduResponseListener<List<GarduPenyulangOrm>>()
                 {
                     @Override public void onResponseFailed(int status, String message)
                     {
@@ -273,7 +273,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
                         if(message != null)
                         {
-                            Toast.makeText(Dashboard.this, message, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GarduIndexInsert.this, message, Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -345,7 +345,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             }
             case R.id.activity_dashboard_menu_jump_to_gardu_index_measurement:
             {
-                @NotNull Intent intent = new Intent(Dashboard.this, GarduIndexMeasurement.class);
+                @NotNull Intent intent = new Intent(GarduIndexInsert.this, GarduIndexMeasurement.class);
                 super.startActivity(intent);
 
                 return true;
@@ -360,7 +360,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         switch(requestCode)
         {
             // Check for the integer request code originally supplied to startResolutionForResult().
-            case Dashboard.REQUEST_CHECK_SETTINGS:
+            case GarduIndexInsert.REQUEST_CHECK_SETTINGS:
             {
                 switch(resultCode)
                 {
@@ -415,7 +415,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
         this.shiftUISubmit(true);
         this.location.setChecked(false);
-        this.service.removeLocationUpdates(Dashboard.this);
+        this.service.removeLocationUpdates(GarduIndexInsert.this);
         this.oLocation.setLocation(null);
     }
 
@@ -450,7 +450,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                         @Override
                         public void onClick(View view)
                         {
-                            ActivityCompat.requestPermissions(Dashboard.this,
+                            ActivityCompat.requestPermissions(GarduIndexInsert.this,
                                     new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
                                     REQUEST_PERMISSIONS_REQUEST_CODE);
                         }
@@ -463,7 +463,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
             /* Request permission. It's possible this can be auto answered if device policy
              sets the permission in a given state or the user denied the permission
              previously and checked "Never ask again".*/
-            ActivityCompat.requestPermissions(Dashboard.this,
+            ActivityCompat.requestPermissions(GarduIndexInsert.this,
                     new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_PERMISSIONS_REQUEST_CODE);
         }
@@ -612,13 +612,13 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.isSubmitRequested = false;
         //this.service.removeLocationUpdates(this);
 
-        final GarduIndexOrm report = Dashboard.this.report;
+        final GarduIndexOrm report = GarduIndexInsert.this.report;
         if((report.getLatitude() == null) || (report.getLongitude() == null))
         {
             report.setLocation(new LocationOrm(location));
         }
 
-        this.doSubmit(Dashboard.this.report);
+        this.doSubmit(GarduIndexInsert.this.report);
     }
 
     private void doSubmit(final GarduIndexOrm report)
@@ -633,9 +633,9 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
                 if(message != null)
                 {
-                    Toast.makeText(Dashboard.this, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GarduIndexInsert.this, message, Toast.LENGTH_SHORT).show();
                 }
-                Dashboard.this.shiftUISubmit(true);
+                GarduIndexInsert.this.shiftUISubmit(true);
 
             }
 
@@ -644,8 +644,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                 Timber.d("onRequestSuccessful");
 
                 this.onRequestFailed(status, message);
-                Dashboard.this.location.setChecked(false);
-                Dashboard.this.cleanForm();
+                GarduIndexInsert.this.location.setChecked(false);
+                GarduIndexInsert.this.cleanForm();
             }
         });
     }
@@ -767,7 +767,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                                     Timber.d("All oLocation settings are satisfied.");
                                     //noinspection MissingPermission
                                     LocationServices.FusedLocationApi.requestLocationUpdates(LocationService.this.apiClient, LocationService.this.locationRequest, listener);
-                                    Dashboard.this.service.isAlreadyRequested = true;
+                                    GarduIndexInsert.this.service.isAlreadyRequested = true;
                                     break;
                                 }
                                 case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -778,7 +778,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                                     {
                                         /* Show the dialog by calling startResolutionForResult(), and check the
                                          result in onActivityResult(). */
-                                        status.startResolutionForResult(Dashboard.this, Dashboard.REQUEST_CHECK_SETTINGS);
+                                        status.startResolutionForResult(GarduIndexInsert.this, GarduIndexInsert.REQUEST_CHECK_SETTINGS);
                                     }
                                     catch(IntentSender.SendIntentException e)
                                     {
@@ -790,7 +790,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
                                 {
                                     String errorMessage = "Location settings are inadequate, and cannot be fixed here. Fix in Settings.";
                                     Timber.e(errorMessage);
-                                    Toast.makeText(Dashboard.this, errorMessage, Toast.LENGTH_LONG).show();
+                                    Toast.makeText(GarduIndexInsert.this, errorMessage, Toast.LENGTH_LONG).show();
                                 }
                             }
                         }
@@ -840,7 +840,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             Timber.d("createLocationManager");
 
-            this.locationManager = (LocationManager) Dashboard.super.getSystemService(LOCATION_SERVICE);
+            this.locationManager = (LocationManager) GarduIndexInsert.super.getSystemService(LOCATION_SERVICE);
         }
 
         private void createLocationRequest()
@@ -857,7 +857,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         {
             Timber.d("createAPI");
 
-            this.apiClient = new GoogleApiClient.Builder(Dashboard.this)
+            this.apiClient = new GoogleApiClient.Builder(GarduIndexInsert.this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
@@ -891,7 +891,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
         {
             Timber.d("onConnectionFailed");
-            Toast.makeText(Dashboard.this, Dashboard.super.getResources().getString(R.string.error_connect_to_location_api), Toast.LENGTH_SHORT).show();
+            Toast.makeText(GarduIndexInsert.this, GarduIndexInsert.super.getResources().getString(R.string.error_connect_to_location_api), Toast.LENGTH_SHORT).show();
 
             this.availability.setBool(false);
         }

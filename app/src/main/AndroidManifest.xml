@@ -17,7 +17,7 @@
             android:theme="@style/AppTheme"
             tools:replace="android:label">
         <activity
-                android:name=".controller.Dashboard"
+                android:name=".controller.GarduIndexInsert"
                 android:label="@string/activity_dashboard_title"
                 android:theme="@style/AppTheme.NoActionBar" />
         <activity

@@ -311,7 +311,7 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
             }
             case R.id.activity_dashboard_menu_jump_to_dashboard:
             {
-                @NotNull Intent intent = new Intent(GarduIndexMeasurement.this, Dashboard.class);
+                @NotNull Intent intent = new Intent(GarduIndexMeasurement.this, GarduIndexInsert.class);
                 super.startActivity(intent);
 
                 return true;
