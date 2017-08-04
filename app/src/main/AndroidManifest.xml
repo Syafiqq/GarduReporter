@@ -17,10 +17,9 @@
             android:theme="@style/AppTheme"
             tools:replace="android:label">
         <activity
-                android:name=".controller.Dashboard"
+                android:name=".controller.GarduIndexInsert"
                 android:label="@string/activity_dashboard_title"
                 android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
                 android:name=".controller.SplashScreen"
                 android:label="@string/application_name"
@@ -34,6 +33,10 @@
         <activity
                 android:name=".controller.AuthLogin"
                 android:label="@string/activity_auth_login_title"
+                android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+                android:name=".controller.GarduIndexMeasurement"
+                android:label="@string/title_activity_gardu_index_measurement"
                 android:theme="@style/AppTheme.NoActionBar" />
     </application>
 

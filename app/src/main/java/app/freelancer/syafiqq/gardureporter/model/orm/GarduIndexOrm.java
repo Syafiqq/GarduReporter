@@ -12,7 +12,7 @@ import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class GarduOrm
+public class GarduIndexOrm
 {
     @Nullable @SerializedName("induk_id")
     private Integer garduInduk;
@@ -41,11 +41,11 @@ public class GarduOrm
     @Nullable @SerializedName("long")
     private Double longitude;
 
-    public GarduOrm()
+    public GarduIndexOrm()
     {
     }
 
-    public GarduOrm(@NotNull GarduIndukOrm garduInduk, @NotNull GarduPenyulangOrm garduPenyulang, @NotNull JenisGarduOrm jenis, @Nullable String no, @Nullable String alamat, @Nullable String merk, @Nullable String serial, @Nullable Integer daya, @Nullable String fasa, @Nullable Integer tap, @Nullable Integer jurusan, @NotNull LocationOrm location)
+    public GarduIndexOrm(@NotNull GarduIndukOrm garduInduk, @NotNull GarduPenyulangOrm garduPenyulang, @NotNull JenisGarduOrm jenis, @Nullable String no, @Nullable String alamat, @Nullable String merk, @Nullable String serial, @Nullable Integer daya, @Nullable String fasa, @Nullable Integer tap, @Nullable Integer jurusan, @NotNull LocationOrm location)
     {
         this.garduInduk = garduInduk.getId();
         this.garduPenyulang = garduPenyulang.getId();
@@ -67,14 +67,14 @@ public class GarduOrm
         return this.garduInduk;
     }
 
-    public void setGarduInduk(@NotNull Integer garduInduk)
-    {
-        this.garduInduk = garduInduk;
-    }
-
     public void setGarduInduk(@NotNull GarduIndukOrm garduInduk)
     {
         this.garduInduk = garduInduk.getId();
+    }
+
+    public void setGarduInduk(@NotNull Integer garduInduk)
+    {
+        this.garduInduk = garduInduk;
     }
 
     public Integer getGarduPenyulang()
@@ -82,14 +82,14 @@ public class GarduOrm
         return this.garduPenyulang;
     }
 
-    public void setGarduPenyulang(@NotNull GarduPenyulangOrm garduPenyulang)
-    {
-        this.garduPenyulang = garduPenyulang.getId();
-    }
-
     public void setGarduPenyulang(@NotNull Integer garduPenyulang)
     {
         this.garduPenyulang = garduPenyulang;
+    }
+
+    public void setGarduPenyulang(@NotNull GarduPenyulangOrm garduPenyulang)
+    {
+        this.garduPenyulang = garduPenyulang.getId();
     }
 
     public String getJenis()
@@ -97,14 +97,14 @@ public class GarduOrm
         return this.jenis;
     }
 
-    public void setJenis(@NotNull JenisGarduOrm jenis)
-    {
-        this.jenis = jenis.getCode();
-    }
-
     public void setJenis(@NotNull String jenis)
     {
         this.jenis = jenis;
+    }
+
+    public void setJenis(@NotNull JenisGarduOrm jenis)
+    {
+        this.jenis = jenis.getCode();
     }
 
     public String getNo()
@@ -219,62 +219,62 @@ public class GarduOrm
         {
             return true;
         }
-        if(!(o instanceof GarduOrm))
+        if(!(o instanceof GarduIndexOrm))
         {
             return false;
         }
 
-        GarduOrm garduOrm = (GarduOrm) o;
+        GarduIndexOrm garduIndexOrm = (GarduIndexOrm) o;
 
-        if(getGarduInduk() != null ? !getGarduInduk().equals(garduOrm.getGarduInduk()) : garduOrm.getGarduInduk() != null)
+        if(getGarduInduk() != null ? !getGarduInduk().equals(garduIndexOrm.getGarduInduk()) : garduIndexOrm.getGarduInduk() != null)
         {
             return false;
         }
-        if(getGarduPenyulang() != null ? !getGarduPenyulang().equals(garduOrm.getGarduPenyulang()) : garduOrm.getGarduPenyulang() != null)
+        if(getGarduPenyulang() != null ? !getGarduPenyulang().equals(garduIndexOrm.getGarduPenyulang()) : garduIndexOrm.getGarduPenyulang() != null)
         {
             return false;
         }
-        if(getJenis() != null ? !getJenis().equals(garduOrm.getJenis()) : garduOrm.getJenis() != null)
+        if(getJenis() != null ? !getJenis().equals(garduIndexOrm.getJenis()) : garduIndexOrm.getJenis() != null)
         {
             return false;
         }
-        if(getNo() != null ? !getNo().equals(garduOrm.getNo()) : garduOrm.getNo() != null)
+        if(getNo() != null ? !getNo().equals(garduIndexOrm.getNo()) : garduIndexOrm.getNo() != null)
         {
             return false;
         }
-        if(getAlamat() != null ? !getAlamat().equals(garduOrm.getAlamat()) : garduOrm.getAlamat() != null)
+        if(getAlamat() != null ? !getAlamat().equals(garduIndexOrm.getAlamat()) : garduIndexOrm.getAlamat() != null)
         {
             return false;
         }
-        if(getMerk() != null ? !getMerk().equals(garduOrm.getMerk()) : garduOrm.getMerk() != null)
+        if(getMerk() != null ? !getMerk().equals(garduIndexOrm.getMerk()) : garduIndexOrm.getMerk() != null)
         {
             return false;
         }
-        if(getSerial() != null ? !getSerial().equals(garduOrm.getSerial()) : garduOrm.getSerial() != null)
+        if(getSerial() != null ? !getSerial().equals(garduIndexOrm.getSerial()) : garduIndexOrm.getSerial() != null)
         {
             return false;
         }
-        if(getDaya() != null ? !getDaya().equals(garduOrm.getDaya()) : garduOrm.getDaya() != null)
+        if(getDaya() != null ? !getDaya().equals(garduIndexOrm.getDaya()) : garduIndexOrm.getDaya() != null)
         {
             return false;
         }
-        if(getFasa() != null ? !getFasa().equals(garduOrm.getFasa()) : garduOrm.getFasa() != null)
+        if(getFasa() != null ? !getFasa().equals(garduIndexOrm.getFasa()) : garduIndexOrm.getFasa() != null)
         {
             return false;
         }
-        if(getTap() != null ? !getTap().equals(garduOrm.getTap()) : garduOrm.getTap() != null)
+        if(getTap() != null ? !getTap().equals(garduIndexOrm.getTap()) : garduIndexOrm.getTap() != null)
         {
             return false;
         }
-        if(getJurusan() != null ? !getJurusan().equals(garduOrm.getJurusan()) : garduOrm.getJurusan() != null)
+        if(getJurusan() != null ? !getJurusan().equals(garduIndexOrm.getJurusan()) : garduIndexOrm.getJurusan() != null)
         {
             return false;
         }
-        if(getLatitude() != null ? !getLatitude().equals(garduOrm.getLatitude()) : garduOrm.getLatitude() != null)
+        if(getLatitude() != null ? !getLatitude().equals(garduIndexOrm.getLatitude()) : garduIndexOrm.getLatitude() != null)
         {
             return false;
         }
-        return getLongitude() != null ? getLongitude().equals(garduOrm.getLongitude()) : garduOrm.getLongitude() == null;
+        return getLongitude() != null ? getLongitude().equals(garduIndexOrm.getLongitude()) : garduIndexOrm.getLongitude() == null;
 
     }
 
@@ -298,7 +298,7 @@ public class GarduOrm
 
     @Override public String toString()
     {
-        final StringBuilder sb = new StringBuilder("GarduOrm{");
+        final StringBuilder sb = new StringBuilder("GarduIndexOrm{");
         sb.append("garduInduk=").append(garduInduk);
         sb.append(", garduPenyulang=").append(garduPenyulang);
         sb.append(", jenis='").append(jenis).append('\'');

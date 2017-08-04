@@ -8,7 +8,8 @@ package app.freelancer.syafiqq.gardureporter.model.service;
  * Github       : syafiqq
  */
 
-import app.freelancer.syafiqq.gardureporter.model.orm.GarduOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexMeasurementOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexOrm;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -23,6 +24,12 @@ public interface GarduService
     @GET("/api/mobile/gardu/penyulang/find?code=B28FE")
     Call<ResponseBody> findGarduPenyulang();
 
+    @GET("/api/mobile/gardu/index/find?code=B231A")
+    Call<ResponseBody> findGarduIndexB231A();
+
     @POST("/api/mobile/gardu/index/insert")
-    Call<ResponseBody> sendGardu(@Body GarduOrm gardu);
+    Call<ResponseBody> sendGardu(@Body GarduIndexOrm gardu);
+
+    @POST("/api/mobile/gardu/pengukuran/index/register")
+    Call<ResponseBody> sendGarduMeasurement(@Body GarduIndexMeasurementOrm measurement);
 }

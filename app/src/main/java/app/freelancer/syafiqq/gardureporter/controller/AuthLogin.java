@@ -52,7 +52,7 @@ public class AuthLogin extends AppCompatActivity implements AuthDao.LoginRequest
         super.setContentView(R.layout.activity_auth_login);
 
         Intent intent = super.getIntent();
-        this.jumper = intent.getIntExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_DASHBOARD);
+        this.jumper = intent.getIntExtra(Setting.Jumper.NAME, Setting.Jumper.CLASS_GARDU_INDEX_INSERT);
         this.user = new UserOrm();
 
         // Set up the login form.
@@ -231,9 +231,14 @@ public class AuthLogin extends AppCompatActivity implements AuthDao.LoginRequest
             @Nullable Intent intent;
             switch(AuthLogin.this.jumper)
             {
-                case Setting.Jumper.CLASS_DASHBOARD:
+                case Setting.Jumper.CLASS_GARDU_INDEX_INSERT:
                 {
-                    intent = new Intent(AuthLogin.this, Dashboard.class);
+                    intent = new Intent(AuthLogin.this, GarduIndexInsert.class);
+                }
+                break;
+                case Setting.Jumper.CLASS_GARDU_INDEX_MEASUREMENT:
+                {
+                    intent = new Intent(AuthLogin.this, GarduIndexMeasurement.class);
                 }
                 break;
                 default:
