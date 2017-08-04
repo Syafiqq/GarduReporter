@@ -11,8 +11,9 @@ package app.freelancer.syafiqq.gardureporter.model.dao;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import app.freelancer.syafiqq.gardureporter.R;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexMeasurementOrm;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
-import app.freelancer.syafiqq.gardureporter.model.orm.GarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
 import app.freelancer.syafiqq.gardureporter.model.service.GarduService;
 import app.freelancer.syafiqq.gardureporter.model.util.Setting;
@@ -101,6 +102,72 @@ public class GarduDao
         });
     }
 
+    public static void findAllIndexB231A(final Context context, final GarduResponseListener<List<GarduIndexOrm>> listener)
+    {
+        Timber.d("findAllIndexB231A");
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(Setting.Networking.getReservedClient(context, true))
+                .build();
+        @NotNull final GarduService services = retrofit.create(GarduService.class);
+        services.findGarduIndexB231A().enqueue(new Callback<ResponseBody>()
+        {
+            @Override public void onResponse(@NotNull Call<ResponseBody> call, @NotNull Response<ResponseBody> response)
+            {
+                String message = null;
+                int success = 0;
+                List<GarduIndexOrm> garduIndex = new ArrayList<>();
+                @Nullable ResponseBody body = response.body();
+                if(body != null)
+                {
+                    try
+                    {
+                        JSONObject res = new JSONObject(body.string());
+                        JSONObject data = res.optJSONObject("data");
+                        if(data != null)
+                        {
+                            success = data.optInt("status");
+                            JSONArray messages = data.optJSONArray("message");
+                            if(messages != null)
+                            {
+                                message = messages.optString(0);
+                            }
+                            JSONArray garduObj = data.optJSONArray("gardu_index");
+                            if(garduObj != null)
+                            {
+                                Gson gson = new Gson();
+                                for(int i = -1, is = garduObj.length(); ++i < is; )
+                                {
+                                    garduIndex.add(gson.fromJson(garduObj.optString(i), GarduIndexOrm.class));
+                                }
+                            }
+                        }
+                    }
+                    catch(IOException | JSONException e)
+                    {
+                        Timber.e(e);
+                    }
+                }
+                if((success > 0))
+                {
+                    listener.onResponseSuccessful(garduIndex, RequestState.SUCCESS, message);
+                }
+                else
+                {
+                    listener.onResponseFailed(RequestState.FAILED, message);
+                }
+            }
+
+            @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable throwable)
+            {
+                Timber.e(throwable);
+                listener.onResponseFailed(RequestState.FAILED, context.getResources().getString(R.string.global_toast_error_retrieve_from_server));
+            }
+        });
+    }
+
     public static void findAllPenyulang(final Context context, final GarduResponseListener<List<GarduPenyulangOrm>> listener)
     {
         Timber.d("findAllPenyulang");
@@ -167,7 +234,7 @@ public class GarduDao
         });
     }
 
-    public static void sendGardu(final Context context, GarduOrm report, final GarduDao.GarduRequestListener listener)
+    public static void sendGardu(final Context context, GarduIndexOrm report, final GarduDao.GarduRequestListener listener)
     {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
@@ -176,6 +243,60 @@ public class GarduDao
                 .build();
         @NotNull final GarduService services = retrofit.create(GarduService.class);
         services.sendGardu(report).enqueue(new Callback<ResponseBody>()
+        {
+            @Override public void onResponse(@NotNull Call<ResponseBody> call, @NotNull Response<ResponseBody> response)
+            {
+                String message = null;
+                int success = 0;
+                @Nullable ResponseBody body = response.body();
+                if(body != null)
+                {
+                    try
+                    {
+                        JSONObject res = new JSONObject(body.string());
+                        JSONObject data = res.optJSONObject("data");
+                        if(data != null)
+                        {
+                            success = data.optInt("status");
+                            JSONArray messages = data.optJSONArray("message");
+                            if(messages != null)
+                            {
+                                message = messages.optString(0);
+                            }
+                        }
+                    }
+                    catch(IOException | JSONException e)
+                    {
+                        Timber.e(e);
+                    }
+                }
+                if((success > 0))
+                {
+                    listener.onRequestSuccessful(RequestState.SUCCESS, message);
+                }
+                else
+                {
+                    listener.onRequestFailed(RequestState.FAILED, message);
+                }
+            }
+
+            @Override public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable throwable)
+            {
+                Timber.e(throwable);
+                listener.onRequestFailed(RequestState.FAILED, context.getResources().getString(R.string.global_toast_error_retrieve_from_server));
+            }
+        });
+    }
+
+    public static void sendGarduMeasurement(final Context context, GarduIndexMeasurementOrm report, final GarduDao.GarduRequestListener listener)
+    {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Setting.getOurInstance().getNetworking().getDomain())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(Setting.Networking.getReservedClient(context, true))
+                .build();
+        @NotNull final GarduService services = retrofit.create(GarduService.class);
+        services.sendGarduMeasurement(report).enqueue(new Callback<ResponseBody>()
         {
             @Override public void onResponse(@NotNull Call<ResponseBody> call, @NotNull Response<ResponseBody> response)
             {
