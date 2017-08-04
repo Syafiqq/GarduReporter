@@ -42,8 +42,8 @@ import app.freelancer.syafiqq.gardureporter.model.custom.android.location.Boolea
 import app.freelancer.syafiqq.gardureporter.model.custom.android.location.ObservableLocation;
 import app.freelancer.syafiqq.gardureporter.model.dao.GarduDao;
 import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
+import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
-import app.freelancer.syafiqq.gardureporter.model.orm.GarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.JenisGarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.LocationOrm;
@@ -98,9 +98,8 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     private Button submit;
 
     //ORM
-    private GarduOrm report;
+    private GarduIndexOrm report;
     private RequestQueue queue;
-    private String sendTag;
 
     //Observer
     private Observer accuracyObserver;
@@ -121,10 +120,9 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         super.setSupportActionBar(toolbar);
 
         this.service = new LocationService();
-        this.report = new GarduOrm();
+        this.report = new GarduIndexOrm();
         this.oLocation = new ObservableLocation(null);
         this.handler = new Handler();
-        this.sendTag = "REPORT_SEND";
 
         if(!this.checkPermissions())
         {
@@ -248,7 +246,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
                         if(message != null)
                         {
-                            Toast.makeText(Dashboard.this, "message", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Dashboard.this, message, Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -275,7 +273,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
 
                         if(message != null)
                         {
-                            Toast.makeText(Dashboard.this, "message", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Dashboard.this, message, Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -519,7 +517,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
     {
         this.shiftUISubmit(false);
 
-        final GarduOrm report = this.report;
+        final GarduIndexOrm report = this.report;
         report.setGarduInduk((GarduIndukOrm) this.garduInduk.getSelectedItem());
         report.setGarduPenyulang((GarduPenyulangOrm) this.garduPenyulang.getSelectedItem());
         report.setJenis((JenisGarduOrm) this.jenisGardu.getSelectedItem());
@@ -605,7 +603,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.isSubmitRequested = false;
         //this.service.removeLocationUpdates(this);
 
-        final GarduOrm report = Dashboard.this.report;
+        final GarduIndexOrm report = Dashboard.this.report;
         if((report.getLatitude() == null) || (report.getLongitude() == null))
         {
             report.setLocation(new LocationOrm(location));
@@ -614,7 +612,7 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         this.doSubmit(Dashboard.this.report);
     }
 
-    private void doSubmit(final GarduOrm report)
+    private void doSubmit(final GarduIndexOrm report)
     {
         Timber.d("doSumbit");
 
