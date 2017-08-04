@@ -339,8 +339,17 @@ public class Dashboard extends AppCompatActivity implements View.OnClickListener
         switch(item.getItemId())
         {
             case R.id.activity_dashboard_menu_logout:
+            {
                 TokenDao.logoutAccount(this);
                 return true;
+            }
+            case R.id.activity_dashboard_menu_jump_to_gardu_index_measurement:
+            {
+                @NotNull Intent intent = new Intent(Dashboard.this, GarduIndexMeasurement.class);
+                super.startActivity(intent);
+
+                return true;
+            }
             default:
                 return super.onOptionsItemSelected(item);
         }
