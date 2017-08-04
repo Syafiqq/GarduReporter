@@ -1,6 +1,7 @@
 package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
@@ -8,19 +9,25 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.controller.adapter.GarduIndexAdapter;
 import app.freelancer.syafiqq.gardureporter.model.dao.GarduDao;
+import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexMeasurementOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexOrm;
 import com.riyagayasen.easyaccordion.AccordionView;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import timber.log.Timber;
 
 public class GarduIndexMeasurement extends AppCompatActivity implements View.OnClickListener
@@ -113,7 +120,9 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
     private TextInputEditText jurusanKhusus2TeganganRS;
     private TextInputEditText jurusanKhusus2TeganganRT;
     private TextInputEditText jurusanKhusus2TeganganST;
+
     private FloatingActionButton submit;
+    private ProgressBar progress;
 
 
     @Override
@@ -135,6 +144,8 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
         Timber.d("onStart");
 
         super.onStart();
+
+        this.progress = (ProgressBar) findViewById(R.id.content_gardu_index_measurement_progress_bar_submit);
         this.noGardu = (SearchableSpinner) findViewById(R.id.content_gardu_index_measurement_searchablespinner_no_gardu);
         final ImageButton garduIndexSync = (ImageButton) findViewById(R.id.content_gardu_index_measurement_imagebutton_no_gardu_refresh);
         final ArrayAdapter<GarduIndexOrm> garduIndexAdapter = new GarduIndexAdapter(super.getApplicationContext(), android.R.layout.simple_spinner_item, new ArrayList<GarduIndexOrm>());
@@ -272,6 +283,42 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
             }
         });
         garduIndexSync.callOnClick();
+        this.shiftUISubmit(true);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        Timber.d("onCreateOptionsMenu");
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_gardu_index_measurement, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        Timber.d("onOptionsItemSelected");
+
+        // Handle item selection
+        switch(item.getItemId())
+        {
+            case R.id.activity_dashboard_menu_logout:
+            {
+                TokenDao.logoutAccount(this);
+                return true;
+            }
+            case R.id.activity_dashboard_menu_jump_to_dashboard:
+            {
+                @NotNull Intent intent = new Intent(GarduIndexMeasurement.this, Dashboard.class);
+                super.startActivity(intent);
+
+                return true;
+            }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void resetForm()
@@ -513,6 +560,8 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
     private void onSubmitConfirmed(final GarduIndexMeasurementOrm measurement)
     {
         Timber.d("onSubmitConfirmed");
+        this.shiftUISubmit(false);
+
 
         GarduDao.sendGarduMeasurement(super.getApplicationContext(), measurement, new GarduDao.GarduRequestListener()
         {
@@ -524,7 +573,7 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
                 {
                     Toast.makeText(GarduIndexMeasurement.this, message, Toast.LENGTH_SHORT).show();
                 }
-
+                GarduIndexMeasurement.this.shiftUISubmit(true);
             }
 
             @Override public void onRequestSuccessful(int status, String message)
@@ -535,5 +584,19 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
                 measurement.reset();
             }
         });
+    }
+
+    private void shiftUISubmit(boolean finished)
+    {
+        if(finished)
+        {
+            this.progress.setVisibility(View.GONE);
+            this.submit.setEnabled(true);
+        }
+        else
+        {
+            this.progress.setVisibility(View.VISIBLE);
+            this.submit.setEnabled(false);
+        }
     }
 }
