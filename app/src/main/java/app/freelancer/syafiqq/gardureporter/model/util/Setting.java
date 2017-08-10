@@ -108,7 +108,7 @@ public class Setting
                     boolean isVerified = false;
                     switch(host)
                     {
-                        case "freelancer.gardu.reporter.app":
+                        case "gardureporter.000webhostapp.com":
                         {
                             isVerified = true;
                             break;
