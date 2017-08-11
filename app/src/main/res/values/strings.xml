@@ -130,4 +130,5 @@
     <string name="content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_st">@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_st</string>
     <string name="common_activity_jump_to_gardu_index_measurement">Pengukuran</string>
     <string name="common_activity_jump_to_dashboard">Tambah Gardu</string>
+    <string name="crash_toast_text">Test</string>
 </resources>
