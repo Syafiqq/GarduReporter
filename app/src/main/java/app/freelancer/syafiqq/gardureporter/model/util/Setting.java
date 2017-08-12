@@ -78,7 +78,7 @@ public class Setting
                 sslContext = SSLContext.getInstance(CLIENT_AGREEMENT);
                 TrustManagerFactory trustManager = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 KeyStore tks = KeyStore.getInstance(CLIENT_TRUST_KEYSTORE);
-                InputStream is = context.getResources().openRawResource(R.raw.apache_self_signed_bks);
+                InputStream is = context.getResources().openRawResource(R.raw.freelancer_gardu_reporter_app_bks);
                 //noinspection TryFinallyCanBeTryWithResources
                 try
                 {
