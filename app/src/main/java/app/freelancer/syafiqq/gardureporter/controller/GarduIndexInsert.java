@@ -26,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -54,6 +55,14 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +72,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
-public class GarduIndexInsert extends AppCompatActivity implements View.OnClickListener, LocationListener
+public class GarduIndexInsert extends AppCompatActivity implements View.OnClickListener, LocationListener, OnMapReadyCallback
 {
     private static final String TAG = GarduIndexInsert.class.getSimpleName();
 
@@ -103,6 +112,9 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
     private boolean isSubmitRequested;
 
     private int countRequest;
+    private GoogleMap map;
+    private Marker marker;
+    private LinearLayout mapContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -147,20 +159,27 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         this.tap = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_tap);
         this.jurusan = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_jurusan);
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
+        this.mapContainer = (LinearLayout) findViewById(R.id.content_dashboard_linearlayout_map_container);
+        final SupportMapFragment mapFragment = (SupportMapFragment) super.getSupportFragmentManager().findFragmentById(R.id.content_dashboard_fragment_map);
 
         this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
         final ImageButton garduIndukSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_induk_refresh);
         final ImageButton garduPenyulangSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_penyulang_refresh);
 
+
+        mapFragment.getMapAsync(this);
+
         this.isSubmitRequested = false;
         this.countRequest = 0;
 
         this.updateAccuracy(this.oLocation.getLocation());
+
         this.accuracyObserver = new Observer()
         {
             @Override public void update(Observable observable, Object o)
             {
                 GarduIndexInsert.this.updateAccuracy((Location) o);
+                GarduIndexInsert.this.updateMap(GarduIndexInsert.this.map, (Location) o);
             }
         };
         this.serviceObserver = new Observer()
@@ -286,6 +305,38 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         });
         garduIndukSync.callOnClick();
         garduPenyulangSync.callOnClick();
+        this.location.setChecked(false);
+    }
+
+    private void updateMap(GoogleMap map, Location o)
+    {
+        if(map != null)
+        {
+            if(o == null)
+            {
+                if(this.marker != null)
+                {
+                    this.marker.setVisible(false);
+                }
+            }
+            else
+            {
+                LatLng latLng = new LatLng(o.getLatitude(), o.getLongitude());
+
+                if(this.marker != null)
+                {
+                    this.marker.setPosition(latLng);
+                }
+                else
+                {
+                    this.marker = map.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                }
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
+                this.marker.setVisible(true);
+            }
+        }
     }
 
     @Override protected void onResume()
@@ -405,6 +456,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
                 this.service.requestLocationUpdates(this);
             }
         }
+        this.mapContainer.setVisibility(View.VISIBLE);
     }
 
     private void onLocationRequestSwitchedOff()
@@ -415,6 +467,8 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         this.location.setChecked(false);
         this.service.removeLocationUpdates(GarduIndexInsert.this);
         this.oLocation.setLocation(null);
+        this.updateMap(this.map, null);
+        this.mapContainer.setVisibility(View.GONE);
     }
 
 
@@ -669,6 +723,17 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         this.fasa.getText().clear();
         this.tap.getText().clear();
         this.jurusan.getText().clear();
+    }
+
+    @Override public void onMapReady(GoogleMap googleMap)
+    {
+        //LatLng sydney = new LatLng(-33.852, 151.211);
+        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        googleMap.setMinZoomPreference(14.0f);
+        googleMap.setMaxZoomPreference(14.0f);
+        googleMap.getUiSettings().setScrollGesturesEnabled(false);
+        this.map = googleMap;
     }
 
     private final class LocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
