@@ -333,7 +333,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
                             .position(latLng)
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
                 }
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.0f));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17.0f));
                 this.marker.setVisible(true);
             }
         }
@@ -730,8 +730,8 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         //LatLng sydney = new LatLng(-33.852, 151.211);
         //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        googleMap.setMinZoomPreference(14.0f);
-        googleMap.setMaxZoomPreference(14.0f);
+        googleMap.setMinZoomPreference(17.0f);
+        googleMap.setMaxZoomPreference(17.0f);
         googleMap.getUiSettings().setScrollGesturesEnabled(false);
         this.map = googleMap;
     }
@@ -741,14 +741,14 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         /**
          * The desired interval for oLocation updates. Inexact. Updates may be more or less frequent.
          */
-        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7500;
+        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
         /**
          * The fastest rate for active oLocation updates. Updates will never be more frequent
          * than this value.
          */
-        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
+        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 3500;
 
-        private static final float COUNT_REQUEST_THRESHOLD = 4;
+        private static final float COUNT_REQUEST_THRESHOLD = 7;
         public BooleanObserver availability;
         /**
          * Provides the entry point to Google Play services.
