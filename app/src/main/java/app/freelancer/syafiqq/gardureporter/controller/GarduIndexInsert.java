@@ -2,14 +2,11 @@ package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,7 +44,6 @@ import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.JenisGarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.LocationOrm;
-import com.android.volley.RequestQueue;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -61,7 +57,6 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import org.jetbrains.annotations.NotNull;
@@ -74,7 +69,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
 
     // Used in checking for runtime permissions.
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 0x22;
-    private static final int SECONDS_DELAYED = 30;
+    private static final int SECONDS_DELAYED = 45;
     private static final int REQUEST_CHECK_SETTINGS = 0x01;
 
     private LocationService service;
@@ -99,7 +94,6 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
 
     //ORM
     private GarduIndexOrm report;
-    private RequestQueue queue;
 
     //Observer
     private Observer accuracyObserver;
@@ -108,6 +102,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
     private Runnable asyncOverrideLocationRequest;
     private boolean isSubmitRequested;
 
+    private int countRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -158,6 +153,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         final ImageButton garduPenyulangSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_penyulang_refresh);
 
         this.isSubmitRequested = false;
+        this.countRequest = 0;
 
         this.updateAccuracy(this.oLocation.getLocation());
         this.accuracyObserver = new Observer()
@@ -389,7 +385,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
     {
         Timber.d("updateAccuracy");
 
-        this.location.setText(String.format(Locale.getDefault(), super.getResources().getString(R.string.content_dashboard_accuracy_label), location == null ? Float.POSITIVE_INFINITY : location.getAccuracy()));
+        this.location.setText(super.getResources().getString(R.string.content_dashboard_accuracy_label));
     }
 
     private void onLocationRequestSwitchedOn()
@@ -404,6 +400,8 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         {
             if(!this.service.isAlreadyRequested)
             {
+                this.countRequest = 0;
+                this.oLocation.setLocation(null);
                 this.service.requestLocationUpdates(this);
             }
         }
@@ -585,22 +583,17 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
 
         if(location != null)
         {
-            Timber.d("Location [%.14g,%.14g] %s", location.getLatitude(), location.getLongitude(), location.getAccuracy());
-            if(location.hasAccuracy())
-            {
-                if((this.oLocation.getLocation() == null ? Float.MAX_VALUE : this.oLocation.getLocation().getAccuracy()) > location.getAccuracy())
-                {
-                    this.oLocation.setLocation(location);
-                }
+            Timber.d("Location [%b] [%.14g,%.14g] [%s]", this.oLocation.getLocation() != null, location.getLatitude(), location.getLongitude(), this.countRequest);
+            this.oLocation.setLocation(location);
 
-                if(this.isSubmitRequested)
+            if(this.isSubmitRequested)
+            {
+                if(this.countRequest >= LocationService.COUNT_REQUEST_THRESHOLD)
                 {
-                    if(this.oLocation.getLocation().getAccuracy() <= LocationService.DISTANCE_ERROR_THRESHOLD_IN_METERS)
-                    {
-                        this.prepareSubmit(this.oLocation.getLocation());
-                    }
+                    this.prepareSubmit(this.oLocation.getLocation());
                 }
             }
+            ++this.countRequest;
         }
     }
 
@@ -690,7 +683,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
          */
         private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
 
-        private static final float DISTANCE_ERROR_THRESHOLD_IN_METERS = 20;
+        private static final float COUNT_REQUEST_THRESHOLD = 4;
         public BooleanObserver availability;
         /**
          * Provides the entry point to Google Play services.
@@ -894,23 +887,6 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
             Toast.makeText(GarduIndexInsert.this, GarduIndexInsert.super.getResources().getString(R.string.error_connect_to_location_api), Toast.LENGTH_SHORT).show();
 
             this.availability.setBool(false);
-        }
-
-        public boolean isGPSEnabled(Context ctx)
-        {
-            @NotNull
-            final LocationManager locationManager = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
-            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        }
-
-        public boolean isInternetConnected(Context ctx)
-        {
-            @NotNull
-            final ConnectivityManager manager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            @Nullable
-            final NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
-            return activeNetwork != null && (activeNetwork.getState() == NetworkInfo.State.CONNECTED || activeNetwork.getState() == NetworkInfo.State.CONNECTING);
         }
 
         public void destroyService()

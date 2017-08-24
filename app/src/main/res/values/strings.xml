@@ -39,7 +39,7 @@
     <string name="error_incorrect_login">Account is Invalid</string>
     <string name="common_auth_logout">Logout</string>
     <string name="content_dashboard_button_location_request">GPS</string>
-    <string name="content_dashboard_accuracy_label" formatted="true">Akurasi GPS : %.2f</string>
+    <string name="content_dashboard_accuracy_label" formatted="true">Aktifkan GPS</string>
     <string name="error_connect_to_location_api">Cannot connect to location service</string>
     <string name="error_no_location_retrieved">Cannot locate device</string>
     <string name="title_activity_gardu_index_measurement">Pengukuran</string>
