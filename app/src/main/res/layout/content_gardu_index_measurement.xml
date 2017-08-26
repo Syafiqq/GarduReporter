@@ -17,7 +17,7 @@
 
     <ProgressBar
             android:id="@+id/content_gardu_index_measurement_progress_bar_submit"
-            style="?android:attr/progressBarStyleSmall"
+            style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -74,7 +74,8 @@
                         android:id="@+id/content_gardu_index_measurement_arus_r"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_r" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_r"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -85,7 +86,8 @@
                         android:id="@+id/content_gardu_index_measurement_arus_s"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_s" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_s"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -96,7 +98,8 @@
                         android:id="@+id/content_gardu_index_measurement_arus_t"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_t" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_t"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -107,7 +110,8 @@
                         android:id="@+id/content_gardu_index_measurement_arus_n"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_n" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_arus_n"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <!-- Tegangan -->
@@ -120,7 +124,8 @@
                         android:id="@+id/content_gardu_index_measurement_tegangan_rn"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_rn" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_rn"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -131,7 +136,8 @@
                         android:id="@+id/content_gardu_index_measurement_tegangan_sn"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_sn" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_sn"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -142,7 +148,8 @@
                         android:id="@+id/content_gardu_index_measurement_tegangan_tn"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_tn" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_tn"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -153,7 +160,8 @@
                         android:id="@+id/content_gardu_index_measurement_tegangan_rs"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_rs" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_rs"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -164,7 +172,8 @@
                         android:id="@+id/content_gardu_index_measurement_tegangan_rt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_rt" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_rt"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -175,7 +184,8 @@
                         android:id="@+id/content_gardu_index_measurement_tegangan_st"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_st" />
+                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_tegangan_st"
+                        android:inputType="numberSigned" />
             </android.support.design.widget.TextInputLayout>
 
             <com.riyagayasen.easyaccordion.AccordionView
@@ -234,7 +244,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_arus_r"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_r" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_r"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -245,7 +256,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_arus_s"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_s" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_s"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -256,7 +268,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_arus_t"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_t" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_t"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -267,7 +280,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_arus_n"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_n" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_arus_n"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <!-- Tegangan -->
@@ -280,7 +294,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_tegangan_rn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_rn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_rn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -291,7 +306,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_tegangan_sn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_sn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_sn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -302,7 +318,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_tegangan_tn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_tn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_tn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -313,7 +330,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_tegangan_rs"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_rs" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_rs"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -324,7 +342,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_tegangan_rt"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_rt" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_rt"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -335,7 +354,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_1_tegangan_st"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_st" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_1_tegangan_st"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
                         </LinearLayout>
                     </com.riyagayasen.easyaccordion.AccordionView>
@@ -379,7 +399,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_arus_r"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_r" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_r"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -390,7 +411,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_arus_s"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_s" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_s"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -401,7 +423,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_arus_t"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_t" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_t"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -412,7 +435,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_arus_n"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_n" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_arus_n"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <!-- Tegangan -->
@@ -425,7 +449,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_tegangan_rn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_rn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_rn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -436,7 +461,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_tegangan_sn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_sn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_sn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -447,7 +473,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_tegangan_tn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_tn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_tn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -458,7 +485,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_tegangan_rs"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_rs" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_rs"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -469,7 +497,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_tegangan_rt"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_rt" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_rt"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -480,7 +509,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_2_tegangan_st"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_st" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_2_tegangan_st"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
                         </LinearLayout>
                     </com.riyagayasen.easyaccordion.AccordionView>
@@ -524,7 +554,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_arus_r"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_r" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_r"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -535,7 +566,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_arus_s"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_s" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_s"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -546,7 +578,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_arus_t"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_t" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_t"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -557,7 +590,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_arus_n"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_n" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_arus_n"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <!-- Tegangan -->
@@ -570,7 +604,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_tegangan_rn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_rn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_rn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -581,7 +616,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_tegangan_sn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_sn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_sn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -592,7 +628,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_tegangan_tn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_tn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_tn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -603,7 +640,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_tegangan_rs"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_rs" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_rs"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -614,7 +652,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_tegangan_rt"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_rt" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_rt"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -625,7 +664,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_3_tegangan_st"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_st" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_3_tegangan_st"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
                         </LinearLayout>
                     </com.riyagayasen.easyaccordion.AccordionView>
@@ -669,7 +709,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_arus_r"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_r" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_r"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -680,7 +721,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_arus_s"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_s" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_s"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -691,7 +733,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_arus_t"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_t" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_t"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -702,7 +745,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_arus_n"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_n" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_arus_n"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <!-- Tegangan -->
@@ -715,7 +759,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_tegangan_rn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_rn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_rn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -726,7 +771,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_tegangan_sn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_sn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_sn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -737,7 +783,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_tegangan_tn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_tn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_tn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -748,7 +795,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_tegangan_rs"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_rs" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_rs"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -759,7 +807,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_tegangan_rt"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_rt" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_rt"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -770,7 +819,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_umum_4_tegangan_st"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_st" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_umum_4_tegangan_st"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
                         </LinearLayout>
                     </com.riyagayasen.easyaccordion.AccordionView>
@@ -833,7 +883,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_arus_r"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_r" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_r"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -844,7 +895,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_arus_s"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_s" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_s"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -855,7 +907,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_arus_t"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_t" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_t"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -866,7 +919,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_arus_n"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_n" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_arus_n"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <!-- Tegangan -->
@@ -879,7 +933,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_tegangan_rn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_rn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_rn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -890,7 +945,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_tegangan_sn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_sn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_sn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -901,7 +957,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_tegangan_tn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_tn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_tn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -912,7 +969,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_tegangan_rs"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_rs" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_rs"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -923,7 +981,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_tegangan_rt"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_rt" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_rt"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -934,7 +993,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_1_tegangan_st"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_st" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_1_tegangan_st"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
                         </LinearLayout>
                     </com.riyagayasen.easyaccordion.AccordionView>
@@ -978,7 +1038,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_arus_r"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_r" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_r"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -989,7 +1050,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_arus_s"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_s" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_s"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1000,7 +1062,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_arus_t"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_t" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_t"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1011,7 +1074,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_arus_n"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_n" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_arus_n"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <!-- Tegangan -->
@@ -1024,7 +1088,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_tegangan_rn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_rn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_rn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1035,7 +1100,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_tegangan_sn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_sn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_sn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1046,7 +1112,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_tegangan_tn"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_tn" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_tn"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1057,7 +1124,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_tegangan_rs"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_rs" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_rs"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1068,7 +1136,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_tegangan_rt"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_rt" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_rt"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
 
                             <android.support.design.widget.TextInputLayout
@@ -1079,7 +1148,8 @@
                                         android:id="@+id/content_gardu_index_measurement_jurusan_khusus_2_tegangan_st"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_st" />
+                                        android:hint="@string/content_gardu_index_measurement_textinputedittext_hint_jurusan_khusus_2_tegangan_st"
+                                        android:inputType="numberSigned" />
                             </android.support.design.widget.TextInputLayout>
                         </LinearLayout>
                     </com.riyagayasen.easyaccordion.AccordionView>
