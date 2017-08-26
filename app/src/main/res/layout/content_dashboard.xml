@@ -16,7 +16,7 @@
 
     <ProgressBar
             android:id="@+id/content_dashboard_progress_bar_submit"
-            style="?android:attr/progressBarStyleSmall"
+            style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
