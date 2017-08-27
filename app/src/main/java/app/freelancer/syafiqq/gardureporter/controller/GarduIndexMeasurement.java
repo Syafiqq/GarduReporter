@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
@@ -49,12 +50,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
 public class GarduIndexMeasurement extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, Observer
 {
+    public static final int REQUEST_COUNT_LIMIT = 5;
+    public static final int REQUEST_TIME_LIMIT = 30;
+
+
     private GarduIndexMeasurementOrm measurement;
 
     private SearchableSpinner noGardu;
@@ -156,6 +163,7 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
     private GPSApi gpsApi;
 
     private int countRequest;
+    private CountDownLatch countDown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -597,7 +605,7 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                GarduIndexMeasurement.this.onSubmitConfirmed(GarduIndexMeasurement.this.measurement);
+                GarduIndexMeasurement.this.onSubmitPreparation();
             }
         });
 
@@ -626,11 +634,17 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
         Timber.d("update");
 
         ++this.countRequest;
+        if(this.countDown != null)
+        {
+            this.countDown.countDown();
+        }
 
         @Nullable final Location location = (Location) o;
         if(location != null)
         {
             Timber.d("Location [%b] [%.14g,%.14g] [%s]", true, location.getLatitude(), location.getLongitude(), this.countRequest);
+
+            this.location = location;
         }
         else
         {
@@ -797,10 +811,59 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
         return TextUtils.isEmpty(val) ? replacement : val;
     }
 
+    private void onSubmitPreparation()
+    {
+        new AsyncTask<Void, Void, Void>()
+        {
+            @Override protected void onPreExecute()
+            {
+                super.onPreExecute();
+
+                int remaining = GarduIndexMeasurement.REQUEST_COUNT_LIMIT - GarduIndexMeasurement.this.countRequest;
+                if(remaining > 0)
+                {
+                    GarduIndexMeasurement.this.countDown = new CountDownLatch(remaining > 0 ? remaining : 0);
+                    GarduIndexMeasurement.this.gpsSwitchReqeust.setChecked(true);
+                    GarduIndexMeasurement.this.shiftUISubmit(false);
+                }
+            }
+
+            @Override protected Void doInBackground(Void... voids)
+            {
+                try
+                {
+                    if(GarduIndexMeasurement.this.countDown != null)
+                    {
+                        GarduIndexMeasurement.this.countDown.await(GarduIndexMeasurement.REQUEST_TIME_LIMIT, TimeUnit.SECONDS);
+                    }
+                }
+                catch(InterruptedException e)
+                {
+                    Timber.e(e);
+                }
+                return null;
+            }
+
+            @Override protected void onPostExecute(Void aVoid)
+            {
+                if(GarduIndexMeasurement.this.location == null)
+                {
+                    Toast.makeText(GarduIndexMeasurement.this, GarduIndexMeasurement.super.getResources().getString(R.string.error_no_location_retrieved), Toast.LENGTH_SHORT).show();
+                    GarduIndexMeasurement.this.shiftUISubmit(true);
+                }
+                else
+                {
+                    GarduIndexMeasurement.this.measurement.setLatitude(GarduIndexMeasurement.this.location.getLatitude());
+                    GarduIndexMeasurement.this.measurement.setLongitude(GarduIndexMeasurement.this.location.getLongitude());
+                    GarduIndexMeasurement.this.onSubmitConfirmed(GarduIndexMeasurement.this.measurement);
+                }
+            }
+        }.execute();
+    }
+
     private void onSubmitConfirmed(final GarduIndexMeasurementOrm measurement)
     {
         Timber.d("onSubmitConfirmed");
-        this.shiftUISubmit(false);
 
         GarduDao.sendGarduMeasurement(super.getApplicationContext(), measurement, new GarduDao.GarduRequestListener()
         {
@@ -819,8 +882,9 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
             {
                 Timber.d("onRequestSuccessful");
 
+                GarduIndexMeasurement.this.gpsSwitchReqeust.setChecked(false);
                 this.onRequestFailed(status, message);
-                measurement.reset();
+                GarduIndexMeasurement.this.measurement.reset();
             }
         });
     }
