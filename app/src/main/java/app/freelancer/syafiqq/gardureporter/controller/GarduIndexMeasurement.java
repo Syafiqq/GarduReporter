@@ -1,9 +1,16 @@
 package app.freelancer.syafiqq.gardureporter.controller;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -14,24 +21,47 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.Toast;
+import app.freelancer.syafiqq.gardureporter.BuildConfig;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.controller.adapter.GarduIndexAdapter;
+import app.freelancer.syafiqq.gardureporter.model.custom.android.location.BooleanObserver;
 import app.freelancer.syafiqq.gardureporter.model.dao.GarduDao;
 import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexMeasurementOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndexOrm;
+import app.freelancer.syafiqq.gardureporter.model.util.GPSApi;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.riyagayasen.easyaccordion.AccordionView;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
-public class GarduIndexMeasurement extends AppCompatActivity implements View.OnClickListener
+public class GarduIndexMeasurement extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, Observer
 {
+    public static final int REQUEST_COUNT_LIMIT = 5;
+    public static final int REQUEST_TIME_LIMIT = 30;
+
+
     private GarduIndexMeasurementOrm measurement;
 
     private SearchableSpinner noGardu;
@@ -121,9 +151,19 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
     private TextInputEditText jurusanKhusus2TeganganRT;
     private TextInputEditText jurusanKhusus2TeganganST;
 
+    private Observer serviceObserver;
+    private Location location;
     private FloatingActionButton submit;
     private ProgressBar progress;
+    private Switch gpsSwitchReqeust;
 
+    private GoogleMap map;
+    private Marker marker;
+    private LinearLayout mapContainer;
+    private GPSApi gpsApi;
+
+    private int countRequest;
+    private CountDownLatch countDown;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -137,6 +177,13 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
 
         this.submit = (FloatingActionButton) super.findViewById(R.id.content_gardu_index_measurement_floatingactionbutton_submit);
         this.submit.setOnClickListener(this);
+        this.gpsApi = new GPSApi(this);
+
+        if(!this.gpsApi.checkPermissions())
+        {
+            this.gpsApi.requestPermissions(R.id.activity_dashboard_root);
+        }
+        this.gpsApi.initializeService();
     }
 
     @Override protected void onStart()
@@ -242,6 +289,10 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
         this.jurusanKhusus2TeganganRT = (TextInputEditText) findViewById(R.id.content_gardu_index_measurement_jurusan_khusus_2_tegangan_rt);
         this.jurusanKhusus2TeganganST = (TextInputEditText) findViewById(R.id.content_gardu_index_measurement_jurusan_khusus_2_tegangan_st);
 
+        this.mapContainer = (LinearLayout) findViewById(R.id.content_gardu_index_measurement_linearlayout_map_container);
+        this.gpsSwitchReqeust = (Switch) findViewById(R.id.content_gardu_index_measurement_switch_location);
+        final SupportMapFragment mapFragment = (SupportMapFragment) super.getSupportFragmentManager().findFragmentById(R.id.content_gardu_index_measurement_fragment_map);
+
         this.measurement = new GarduIndexMeasurementOrm()
         {
             @Override public void reset()
@@ -250,10 +301,6 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
                 GarduIndexMeasurement.this.resetForm();
             }
         };
-
-        noGardu.setAdapter(garduIndexAdapter);
-        noGardu.setTitle("Select Gardu");
-        noGardu.setPositiveButton("OK");
 
         garduIndexSync.setOnClickListener(new View.OnClickListener()
         {
@@ -282,8 +329,43 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
                 });
             }
         });
-        garduIndexSync.callOnClick();
+
+        this.serviceObserver = new Observer()
+        {
+            @Override public void update(Observable observable, Object o)
+            {
+                BooleanObserver bool = (BooleanObserver) observable;
+                final boolean resultedPermission = GarduIndexMeasurement.this.gpsApi.checkPermissions() && bool.isBool();
+                GarduIndexMeasurement.this.shiftUISubmit(resultedPermission);
+            }
+        };
+
+        this.gpsSwitchReqeust.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override public void onCheckedChanged(CompoundButton compoundButton, boolean checked)
+            {
+                if(checked)
+                {
+                    GarduIndexMeasurement.this.onGPSSwitchedOn();
+                }
+                else
+                {
+                    GarduIndexMeasurement.this.onGPSSwitchedOff();
+                }
+            }
+        });
+
+        this.noGardu.setAdapter(garduIndexAdapter);
+        this.noGardu.setTitle("Select Gardu");
+        this.noGardu.setPositiveButton("OK");
+
+        this.gpsApi.addObserver(this);
+        this.gpsApi.getAvailability().addObserver(this.serviceObserver);
+
         this.shiftUISubmit(true);
+        this.gpsSwitchReqeust.setChecked(false);
+        garduIndexSync.callOnClick();
+        mapFragment.getMapAsync(this);
     }
 
     @Override
@@ -321,95 +403,81 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
         }
     }
 
-    private void resetForm()
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        Timber.d("resetForm");
+        Timber.d("onActivityResult");
 
-        this.arusR.setText("");
-        this.arusS.setText("");
-        this.arusT.setText("");
-        this.arusN.setText("");
-        this.teganganRN.setText("");
-        this.teganganSN.setText("");
-        this.teganganTN.setText("");
-        this.teganganRS.setText("");
-        this.teganganRT.setText("");
-        this.teganganST.setText("");
-        this.jurusanUmum1ID.setText("");
-        this.jurusanUmum1ArusR.setText("");
-        this.jurusanUmum1ArusS.setText("");
-        this.jurusanUmum1ArusT.setText("");
-        this.jurusanUmum1ArusN.setText("");
-        this.jurusanUmum1TeganganRN.setText("");
-        this.jurusanUmum1TeganganSN.setText("");
-        this.jurusanUmum1TeganganTN.setText("");
-        this.jurusanUmum1TeganganRS.setText("");
-        this.jurusanUmum1TeganganRT.setText("");
-        this.jurusanUmum1TeganganST.setText("");
-        this.jurusanUmum2ID.setText("");
-        this.jurusanUmum2ArusR.setText("");
-        this.jurusanUmum2ArusS.setText("");
-        this.jurusanUmum2ArusT.setText("");
-        this.jurusanUmum2ArusN.setText("");
-        this.jurusanUmum2TeganganRN.setText("");
-        this.jurusanUmum2TeganganSN.setText("");
-        this.jurusanUmum2TeganganTN.setText("");
-        this.jurusanUmum2TeganganRS.setText("");
-        this.jurusanUmum2TeganganRT.setText("");
-        this.jurusanUmum2TeganganST.setText("");
-        this.jurusanUmum3ID.setText("");
-        this.jurusanUmum3ArusR.setText("");
-        this.jurusanUmum3ArusS.setText("");
-        this.jurusanUmum3ArusT.setText("");
-        this.jurusanUmum3ArusN.setText("");
-        this.jurusanUmum3TeganganRN.setText("");
-        this.jurusanUmum3TeganganSN.setText("");
-        this.jurusanUmum3TeganganTN.setText("");
-        this.jurusanUmum3TeganganRS.setText("");
-        this.jurusanUmum3TeganganRT.setText("");
-        this.jurusanUmum3TeganganST.setText("");
-        this.jurusanUmum4ID.setText("");
-        this.jurusanUmum4ArusR.setText("");
-        this.jurusanUmum4ArusS.setText("");
-        this.jurusanUmum4ArusT.setText("");
-        this.jurusanUmum4ArusN.setText("");
-        this.jurusanUmum4TeganganRN.setText("");
-        this.jurusanUmum4TeganganSN.setText("");
-        this.jurusanUmum4TeganganTN.setText("");
-        this.jurusanUmum4TeganganRS.setText("");
-        this.jurusanUmum4TeganganRT.setText("");
-        this.jurusanUmum4TeganganST.setText("");
-        this.jurusanKhusus1ID.setText("");
-        this.jurusanKhusus1ArusR.setText("");
-        this.jurusanKhusus1ArusS.setText("");
-        this.jurusanKhusus1ArusT.setText("");
-        this.jurusanKhusus1ArusN.setText("");
-        this.jurusanKhusus1TeganganRN.setText("");
-        this.jurusanKhusus1TeganganSN.setText("");
-        this.jurusanKhusus1TeganganTN.setText("");
-        this.jurusanKhusus1TeganganRS.setText("");
-        this.jurusanKhusus1TeganganRT.setText("");
-        this.jurusanKhusus1TeganganST.setText("");
-        this.jurusanKhusus2ID.setText("");
-        this.jurusanKhusus2ArusR.setText("");
-        this.jurusanKhusus2ArusS.setText("");
-        this.jurusanKhusus2ArusT.setText("");
-        this.jurusanKhusus2ArusN.setText("");
-        this.jurusanKhusus2TeganganRN.setText("");
-        this.jurusanKhusus2TeganganSN.setText("");
-        this.jurusanKhusus2TeganganTN.setText("");
-        this.jurusanKhusus2TeganganRS.setText("");
-        this.jurusanKhusus2TeganganRT.setText("");
-        this.jurusanKhusus2TeganganST.setText("");
+        switch(requestCode)
+        {
+            // Check for the integer request code originally supplied to startResolutionForResult().
+            case GPSApi.REQUEST_CHECK_SETTINGS:
+            {
+                switch(resultCode)
+                {
+                    case Activity.RESULT_OK:
+                    {
+                        Timber.d("User agreed to make required localtion settings changes.");
+                        // Nothing to do. startLocationupdates() gets called in onResume again.
+                    }
+                    break;
+                    case Activity.RESULT_CANCELED:
+                    {
+                        Timber.d("User chose not to make required localtion settings changes.");
+                    }
+                    break;
+                }
+                this.gpsSwitchReqeust.setChecked(false);
+                break;
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
-        this.jurusanKhusus2.setExpanded(false);
-        this.jurusanKhusus1.setExpanded(false);
-        this.jurusanKhusus.setExpanded(false);
-        this.jurusanUmum4.setExpanded(false);
-        this.jurusanUmum3.setExpanded(false);
-        this.jurusanUmum2.setExpanded(false);
-        this.jurusanUmum1.setExpanded(false);
-        this.jurusanUmum.setExpanded(false);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults)
+    {
+        Timber.d("onRequestPermissionsResult");
+
+        if(requestCode == GPSApi.REQUEST_PERMISSIONS_REQUEST_CODE)
+        {
+            if(grantResults.length <= 0)
+            {
+                Timber.d("Permission Denied");
+            }
+            else
+            {
+                Timber.d("Permission Granted");
+
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+                    this.serviceObserver.update(this.gpsApi.getAvailability(), false);
+                }
+                else
+                {
+                    Timber.d("Permission Refused");
+
+                    Snackbar.make(
+                            findViewById(R.id.activity_dashboard_root),
+                            R.string.permission_denied_explanation,
+                            Snackbar.LENGTH_INDEFINITE)
+                            .setAction(R.string.command_setting, new View.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(View view)
+                                {
+                                    // Build intent that displays the App settings screen.
+                                    Intent intent = new Intent();
+                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    Uri uri = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null);
+                                    intent.setData(uri);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                }
+                            })
+                            .show();
+                }
+            }
+        }
     }
 
     @Override public void onClick(View view)
@@ -537,7 +605,7 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                GarduIndexMeasurement.this.onSubmitConfirmed(GarduIndexMeasurement.this.measurement);
+                GarduIndexMeasurement.this.onSubmitPreparation();
             }
         });
 
@@ -552,16 +620,250 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
         builder.show();
     }
 
+    @Override public void onMapReady(GoogleMap googleMap)
+    {
+        Timber.d("onMapReady");
+
+        googleMap.setMinZoomPreference(15.0f);
+        googleMap.setMaxZoomPreference(18.0f);
+        this.map = googleMap;
+    }
+
+    @Override public void update(Observable observable, @Nullable Object o)
+    {
+        Timber.d("update");
+
+        ++this.countRequest;
+        if(this.countDown != null)
+        {
+            this.countDown.countDown();
+        }
+
+        @Nullable final Location location = (Location) o;
+        if(location != null)
+        {
+            Timber.d("Location [%b] [%.14g,%.14g] [%s]", true, location.getLatitude(), location.getLongitude(), this.countRequest);
+
+            this.location = location;
+        }
+        else
+        {
+            Timber.d("Location [%b] [%s]", false, this.countRequest);
+        }
+
+        this.updateMap(this.map, location);
+    }
+
+    @Override protected void onResume()
+    {
+        Timber.d("onResume");
+
+        this.serviceObserver.update(this.gpsApi.getAvailability(), false);
+
+        super.onResume();
+    }
+
+    @Override protected void onStop()
+    {
+        Timber.d("onStop");
+
+        this.gpsApi.deleteObserver(this);
+        this.gpsApi.getAvailability().deleteObserver(this.serviceObserver);
+
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        Timber.d("onDestroy");
+
+        this.gpsApi.destroyService();
+        super.onDestroy();
+    }
+    //==============================================================================================
+
+    private void onGPSSwitchedOff()
+    {
+        Timber.d("onGPSSwitchedOff");
+
+        this.shiftUISubmit(true);
+        this.gpsApi.removeLocationUpdates();
+        this.location = null;
+        this.mapContainer.setVisibility(View.GONE);
+    }
+
+    private void onGPSSwitchedOn()
+    {
+        Timber.d("onGPSSwitchedOn");
+
+        if(!this.gpsApi.checkPermissions())
+        {
+            this.gpsApi.requestPermissions(R.id.activity_dashboard_root);
+        }
+        else
+        {
+            if(!this.gpsApi.isAlreadyRequested())
+            {
+                this.countRequest = 0;
+                this.location = null;
+                this.gpsApi.requestLocationUpdates();
+            }
+        }
+        this.mapContainer.setVisibility(View.VISIBLE);
+    }
+
+    private void resetForm()
+    {
+        Timber.d("resetForm");
+
+        this.arusR.setText("");
+        this.arusS.setText("");
+        this.arusT.setText("");
+        this.arusN.setText("");
+        this.teganganRN.setText("");
+        this.teganganSN.setText("");
+        this.teganganTN.setText("");
+        this.teganganRS.setText("");
+        this.teganganRT.setText("");
+        this.teganganST.setText("");
+        this.jurusanUmum1ID.setText("");
+        this.jurusanUmum1ArusR.setText("");
+        this.jurusanUmum1ArusS.setText("");
+        this.jurusanUmum1ArusT.setText("");
+        this.jurusanUmum1ArusN.setText("");
+        this.jurusanUmum1TeganganRN.setText("");
+        this.jurusanUmum1TeganganSN.setText("");
+        this.jurusanUmum1TeganganTN.setText("");
+        this.jurusanUmum1TeganganRS.setText("");
+        this.jurusanUmum1TeganganRT.setText("");
+        this.jurusanUmum1TeganganST.setText("");
+        this.jurusanUmum2ID.setText("");
+        this.jurusanUmum2ArusR.setText("");
+        this.jurusanUmum2ArusS.setText("");
+        this.jurusanUmum2ArusT.setText("");
+        this.jurusanUmum2ArusN.setText("");
+        this.jurusanUmum2TeganganRN.setText("");
+        this.jurusanUmum2TeganganSN.setText("");
+        this.jurusanUmum2TeganganTN.setText("");
+        this.jurusanUmum2TeganganRS.setText("");
+        this.jurusanUmum2TeganganRT.setText("");
+        this.jurusanUmum2TeganganST.setText("");
+        this.jurusanUmum3ID.setText("");
+        this.jurusanUmum3ArusR.setText("");
+        this.jurusanUmum3ArusS.setText("");
+        this.jurusanUmum3ArusT.setText("");
+        this.jurusanUmum3ArusN.setText("");
+        this.jurusanUmum3TeganganRN.setText("");
+        this.jurusanUmum3TeganganSN.setText("");
+        this.jurusanUmum3TeganganTN.setText("");
+        this.jurusanUmum3TeganganRS.setText("");
+        this.jurusanUmum3TeganganRT.setText("");
+        this.jurusanUmum3TeganganST.setText("");
+        this.jurusanUmum4ID.setText("");
+        this.jurusanUmum4ArusR.setText("");
+        this.jurusanUmum4ArusS.setText("");
+        this.jurusanUmum4ArusT.setText("");
+        this.jurusanUmum4ArusN.setText("");
+        this.jurusanUmum4TeganganRN.setText("");
+        this.jurusanUmum4TeganganSN.setText("");
+        this.jurusanUmum4TeganganTN.setText("");
+        this.jurusanUmum4TeganganRS.setText("");
+        this.jurusanUmum4TeganganRT.setText("");
+        this.jurusanUmum4TeganganST.setText("");
+        this.jurusanKhusus1ID.setText("");
+        this.jurusanKhusus1ArusR.setText("");
+        this.jurusanKhusus1ArusS.setText("");
+        this.jurusanKhusus1ArusT.setText("");
+        this.jurusanKhusus1ArusN.setText("");
+        this.jurusanKhusus1TeganganRN.setText("");
+        this.jurusanKhusus1TeganganSN.setText("");
+        this.jurusanKhusus1TeganganTN.setText("");
+        this.jurusanKhusus1TeganganRS.setText("");
+        this.jurusanKhusus1TeganganRT.setText("");
+        this.jurusanKhusus1TeganganST.setText("");
+        this.jurusanKhusus2ID.setText("");
+        this.jurusanKhusus2ArusR.setText("");
+        this.jurusanKhusus2ArusS.setText("");
+        this.jurusanKhusus2ArusT.setText("");
+        this.jurusanKhusus2ArusN.setText("");
+        this.jurusanKhusus2TeganganRN.setText("");
+        this.jurusanKhusus2TeganganSN.setText("");
+        this.jurusanKhusus2TeganganTN.setText("");
+        this.jurusanKhusus2TeganganRS.setText("");
+        this.jurusanKhusus2TeganganRT.setText("");
+        this.jurusanKhusus2TeganganST.setText("");
+
+        this.jurusanKhusus2.setExpanded(false);
+        this.jurusanKhusus1.setExpanded(false);
+        this.jurusanKhusus.setExpanded(false);
+        this.jurusanUmum4.setExpanded(false);
+        this.jurusanUmum3.setExpanded(false);
+        this.jurusanUmum2.setExpanded(false);
+        this.jurusanUmum1.setExpanded(false);
+        this.jurusanUmum.setExpanded(false);
+    }
+
     public String getStringOrDefault(String val, String replacement)
     {
+        Timber.d("getStringOrDefault");
+
         return TextUtils.isEmpty(val) ? replacement : val;
+    }
+
+    private void onSubmitPreparation()
+    {
+        new AsyncTask<Void, Void, Void>()
+        {
+            @Override protected void onPreExecute()
+            {
+                super.onPreExecute();
+
+                int remaining = GarduIndexMeasurement.REQUEST_COUNT_LIMIT - GarduIndexMeasurement.this.countRequest;
+                if(remaining > 0)
+                {
+                    GarduIndexMeasurement.this.countDown = new CountDownLatch(remaining > 0 ? remaining : 0);
+                    GarduIndexMeasurement.this.gpsSwitchReqeust.setChecked(true);
+                    GarduIndexMeasurement.this.shiftUISubmit(false);
+                }
+            }
+
+            @Override protected Void doInBackground(Void... voids)
+            {
+                try
+                {
+                    if(GarduIndexMeasurement.this.countDown != null)
+                    {
+                        GarduIndexMeasurement.this.countDown.await(GarduIndexMeasurement.REQUEST_TIME_LIMIT, TimeUnit.SECONDS);
+                    }
+                }
+                catch(InterruptedException e)
+                {
+                    Timber.e(e);
+                }
+                return null;
+            }
+
+            @Override protected void onPostExecute(Void aVoid)
+            {
+                if(GarduIndexMeasurement.this.location == null)
+                {
+                    Toast.makeText(GarduIndexMeasurement.this, GarduIndexMeasurement.super.getResources().getString(R.string.error_no_location_retrieved), Toast.LENGTH_SHORT).show();
+                    GarduIndexMeasurement.this.shiftUISubmit(true);
+                }
+                else
+                {
+                    GarduIndexMeasurement.this.measurement.setLatitude(GarduIndexMeasurement.this.location.getLatitude());
+                    GarduIndexMeasurement.this.measurement.setLongitude(GarduIndexMeasurement.this.location.getLongitude());
+                    GarduIndexMeasurement.this.onSubmitConfirmed(GarduIndexMeasurement.this.measurement);
+                }
+            }
+        }.execute();
     }
 
     private void onSubmitConfirmed(final GarduIndexMeasurementOrm measurement)
     {
         Timber.d("onSubmitConfirmed");
-        this.shiftUISubmit(false);
-
 
         GarduDao.sendGarduMeasurement(super.getApplicationContext(), measurement, new GarduDao.GarduRequestListener()
         {
@@ -580,23 +882,59 @@ public class GarduIndexMeasurement extends AppCompatActivity implements View.OnC
             {
                 Timber.d("onRequestSuccessful");
 
+                GarduIndexMeasurement.this.gpsSwitchReqeust.setChecked(false);
                 this.onRequestFailed(status, message);
-                measurement.reset();
+                GarduIndexMeasurement.this.measurement.reset();
             }
         });
     }
 
     private void shiftUISubmit(boolean finished)
     {
+        Timber.d("shiftUISubmit");
+
         if(finished)
         {
             this.progress.setVisibility(View.GONE);
             this.submit.setEnabled(true);
+            this.gpsSwitchReqeust.setEnabled(true);
         }
         else
         {
             this.progress.setVisibility(View.VISIBLE);
             this.submit.setEnabled(false);
+            this.gpsSwitchReqeust.setEnabled(true);
+        }
+    }
+
+    private void updateMap(GoogleMap map, Location o)
+    {
+        if(map != null)
+        {
+            if(o == null)
+            {
+                if(this.marker != null)
+                {
+                    this.marker.setVisible(false);
+                }
+            }
+            else
+            {
+                LatLng latLng = new LatLng(o.getLatitude(), o.getLongitude());
+
+                if(this.marker != null)
+                {
+                    this.marker.setPosition(latLng);
+                }
+                else
+                {
+                    this.marker = map.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                }
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17.0f));
+                this.marker.setVisible(true);
+            }
         }
     }
 }

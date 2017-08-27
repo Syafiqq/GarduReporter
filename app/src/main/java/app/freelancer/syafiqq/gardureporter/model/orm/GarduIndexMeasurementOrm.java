@@ -10,7 +10,6 @@ package app.freelancer.syafiqq.gardureporter.model.orm;
 
 import app.freelancer.syafiqq.gardureporter.model.util.Resetable;
 import com.google.gson.annotations.SerializedName;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
@@ -184,11 +183,16 @@ public class GarduIndexMeasurementOrm implements Resetable
     @Nullable @SerializedName("vst_k2")
     private String teganganSTJurusanKhusus2;
 
+    @Nullable @SerializedName("lat")
+    private Double latitude;
+    @Nullable @SerializedName("lng")
+    private Double longitude;
+
     public GarduIndexMeasurementOrm()
     {
     }
 
-    public GarduIndexMeasurementOrm(@NotNull String noGardu, @Nullable String petugas1, @Nullable String petugas2, @Nullable String noKontrak, @Nullable String arusRUtama, @Nullable String arusSUtama, @Nullable String arusTUtama, @Nullable String arusNUtama, @Nullable String teganganRNUtama, @Nullable String teganganSNUtama, @Nullable String teganganTNUtama, @Nullable String teganganRSUtama, @Nullable String teganganRTUtama, @Nullable String teganganSTUtama, @Nullable String idJurusanUmum1, @Nullable String arusRJurusanUmum1, @Nullable String arusSJurusanUmum1, @Nullable String arusTJurusanUmum1, @Nullable String arusNJurusanUmum1, @Nullable String teganganRNJurusanUmum1, @Nullable String teganganSNJurusanUmum1, @Nullable String teganganTNJurusanUmum1, @Nullable String teganganRSJurusanUmum1, @Nullable String teganganRTJurusanUmum1, @Nullable String teganganSTJurusanUmum1, @Nullable String idJurusanUmum2, @Nullable String arusRJurusanUmum2, @Nullable String arusSJurusanUmum2, @Nullable String arusTJurusanUmum2, @Nullable String arusNJurusanUmum2, @Nullable String teganganRNJurusanUmum2, @Nullable String teganganSNJurusanUmum2, @Nullable String teganganTNJurusanUmum2, @Nullable String teganganRSJurusanUmum2, @Nullable String teganganRTJurusanUmum2, @Nullable String teganganSTJurusanUmum2, @Nullable String idJurusanUmum3, @Nullable String arusRJurusanUmum3, @Nullable String arusSJurusanUmum3, @Nullable String arusTJurusanUmum3, @Nullable String arusNJurusanUmum3, @Nullable String teganganRNJurusanUmum3, @Nullable String teganganSNJurusanUmum3, @Nullable String teganganTNJurusanUmum3, @Nullable String teganganRSJurusanUmum3, @Nullable String teganganRTJurusanUmum3, @Nullable String teganganSTJurusanUmum3, @Nullable String idJurusanUmum4, @Nullable String arusRJurusanUmum4, @Nullable String arusSJurusanUmum4, @Nullable String arusTJurusanUmum4, @Nullable String arusNJurusanUmum4, @Nullable String teganganRNJurusanUmum4, @Nullable String teganganSNJurusanUmum4, @Nullable String teganganTNJurusanUmum4, @Nullable String teganganRSJurusanUmum4, @Nullable String teganganRTJurusanUmum4, @Nullable String teganganSTJurusanUmum4, @Nullable String idJurusanKhusus1, @Nullable String arusRJurusanKhusus1, @Nullable String arusSJurusanKhusus1, @Nullable String arusTJurusanKhusus1, @Nullable String arusNJurusanKhusus1, @Nullable String teganganRNJurusanKhusus1, @Nullable String teganganSNJurusanKhusus1, @Nullable String teganganTNJurusanKhusus1, @Nullable String teganganRSJurusanKhusus1, @Nullable String teganganRTJurusanKhusus1, @Nullable String teganganSTJurusanKhusus1, @Nullable String idJurusanKhusus2, @Nullable String arusRJurusanKhusus2, @Nullable String arusSJurusanKhusus2, @Nullable String arusTJurusanKhusus2, @Nullable String arusNJurusanKhusus2, @Nullable String teganganRNJurusanKhusus2, @Nullable String teganganSNJurusanKhusus2, @Nullable String teganganTNJurusanKhusus2, @Nullable String teganganRSJurusanKhusus2, @Nullable String teganganRTJurusanKhusus2, @Nullable String teganganSTJurusanKhusus2)
+    public GarduIndexMeasurementOrm(@Nullable String noGardu, @Nullable String petugas1, @Nullable String petugas2, @Nullable String noKontrak, @Nullable String arusRUtama, @Nullable String arusSUtama, @Nullable String arusTUtama, @Nullable String arusNUtama, @Nullable String teganganRNUtama, @Nullable String teganganSNUtama, @Nullable String teganganTNUtama, @Nullable String teganganRSUtama, @Nullable String teganganRTUtama, @Nullable String teganganSTUtama, @Nullable String idJurusanUmum1, @Nullable String arusRJurusanUmum1, @Nullable String arusSJurusanUmum1, @Nullable String arusTJurusanUmum1, @Nullable String arusNJurusanUmum1, @Nullable String teganganRNJurusanUmum1, @Nullable String teganganSNJurusanUmum1, @Nullable String teganganTNJurusanUmum1, @Nullable String teganganRSJurusanUmum1, @Nullable String teganganRTJurusanUmum1, @Nullable String teganganSTJurusanUmum1, @Nullable String idJurusanUmum2, @Nullable String arusRJurusanUmum2, @Nullable String arusSJurusanUmum2, @Nullable String arusTJurusanUmum2, @Nullable String arusNJurusanUmum2, @Nullable String teganganRNJurusanUmum2, @Nullable String teganganSNJurusanUmum2, @Nullable String teganganTNJurusanUmum2, @Nullable String teganganRSJurusanUmum2, @Nullable String teganganRTJurusanUmum2, @Nullable String teganganSTJurusanUmum2, @Nullable String idJurusanUmum3, @Nullable String arusRJurusanUmum3, @Nullable String arusSJurusanUmum3, @Nullable String arusTJurusanUmum3, @Nullable String arusNJurusanUmum3, @Nullable String teganganRNJurusanUmum3, @Nullable String teganganSNJurusanUmum3, @Nullable String teganganTNJurusanUmum3, @Nullable String teganganRSJurusanUmum3, @Nullable String teganganRTJurusanUmum3, @Nullable String teganganSTJurusanUmum3, @Nullable String idJurusanUmum4, @Nullable String arusRJurusanUmum4, @Nullable String arusSJurusanUmum4, @Nullable String arusTJurusanUmum4, @Nullable String arusNJurusanUmum4, @Nullable String teganganRNJurusanUmum4, @Nullable String teganganSNJurusanUmum4, @Nullable String teganganTNJurusanUmum4, @Nullable String teganganRSJurusanUmum4, @Nullable String teganganRTJurusanUmum4, @Nullable String teganganSTJurusanUmum4, @Nullable String idJurusanKhusus1, @Nullable String arusRJurusanKhusus1, @Nullable String arusSJurusanKhusus1, @Nullable String arusTJurusanKhusus1, @Nullable String arusNJurusanKhusus1, @Nullable String teganganRNJurusanKhusus1, @Nullable String teganganSNJurusanKhusus1, @Nullable String teganganTNJurusanKhusus1, @Nullable String teganganRSJurusanKhusus1, @Nullable String teganganRTJurusanKhusus1, @Nullable String teganganSTJurusanKhusus1, @Nullable String idJurusanKhusus2, @Nullable String arusRJurusanKhusus2, @Nullable String arusSJurusanKhusus2, @Nullable String arusTJurusanKhusus2, @Nullable String arusNJurusanKhusus2, @Nullable String teganganRNJurusanKhusus2, @Nullable String teganganSNJurusanKhusus2, @Nullable String teganganTNJurusanKhusus2, @Nullable String teganganRSJurusanKhusus2, @Nullable String teganganRTJurusanKhusus2, @Nullable String teganganSTJurusanKhusus2, @Nullable Double latitude, @Nullable Double longitude)
     {
         this.noGardu = noGardu;
         this.petugas1 = petugas1;
@@ -270,6 +274,96 @@ public class GarduIndexMeasurementOrm implements Resetable
         this.teganganRSJurusanKhusus2 = teganganRSJurusanKhusus2;
         this.teganganRTJurusanKhusus2 = teganganRTJurusanKhusus2;
         this.teganganSTJurusanKhusus2 = teganganSTJurusanKhusus2;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    @Override public void reset()
+    {
+        Timber.d("reset");
+
+        this.noGardu = null;
+        this.petugas1 = null;
+        this.petugas2 = null;
+        this.noKontrak = null;
+        this.arusRUtama = null;
+        this.arusSUtama = null;
+        this.arusTUtama = null;
+        this.arusNUtama = null;
+        this.teganganRNUtama = null;
+        this.teganganSNUtama = null;
+        this.teganganTNUtama = null;
+        this.teganganRSUtama = null;
+        this.teganganRTUtama = null;
+        this.teganganSTUtama = null;
+        this.idJurusanUmum1 = null;
+        this.arusRJurusanUmum1 = null;
+        this.arusSJurusanUmum1 = null;
+        this.arusTJurusanUmum1 = null;
+        this.arusNJurusanUmum1 = null;
+        this.teganganRNJurusanUmum1 = null;
+        this.teganganSNJurusanUmum1 = null;
+        this.teganganTNJurusanUmum1 = null;
+        this.teganganRSJurusanUmum1 = null;
+        this.teganganRTJurusanUmum1 = null;
+        this.teganganSTJurusanUmum1 = null;
+        this.idJurusanUmum2 = null;
+        this.arusRJurusanUmum2 = null;
+        this.arusSJurusanUmum2 = null;
+        this.arusTJurusanUmum2 = null;
+        this.arusNJurusanUmum2 = null;
+        this.teganganRNJurusanUmum2 = null;
+        this.teganganSNJurusanUmum2 = null;
+        this.teganganTNJurusanUmum2 = null;
+        this.teganganRSJurusanUmum2 = null;
+        this.teganganRTJurusanUmum2 = null;
+        this.teganganSTJurusanUmum2 = null;
+        this.idJurusanUmum3 = null;
+        this.arusRJurusanUmum3 = null;
+        this.arusSJurusanUmum3 = null;
+        this.arusTJurusanUmum3 = null;
+        this.arusNJurusanUmum3 = null;
+        this.teganganRNJurusanUmum3 = null;
+        this.teganganSNJurusanUmum3 = null;
+        this.teganganTNJurusanUmum3 = null;
+        this.teganganRSJurusanUmum3 = null;
+        this.teganganRTJurusanUmum3 = null;
+        this.teganganSTJurusanUmum3 = null;
+        this.idJurusanUmum4 = null;
+        this.arusRJurusanUmum4 = null;
+        this.arusSJurusanUmum4 = null;
+        this.arusTJurusanUmum4 = null;
+        this.arusNJurusanUmum4 = null;
+        this.teganganRNJurusanUmum4 = null;
+        this.teganganSNJurusanUmum4 = null;
+        this.teganganTNJurusanUmum4 = null;
+        this.teganganRSJurusanUmum4 = null;
+        this.teganganRTJurusanUmum4 = null;
+        this.teganganSTJurusanUmum4 = null;
+        this.idJurusanKhusus1 = null;
+        this.arusRJurusanKhusus1 = null;
+        this.arusSJurusanKhusus1 = null;
+        this.arusTJurusanKhusus1 = null;
+        this.arusNJurusanKhusus1 = null;
+        this.teganganRNJurusanKhusus1 = null;
+        this.teganganSNJurusanKhusus1 = null;
+        this.teganganTNJurusanKhusus1 = null;
+        this.teganganRSJurusanKhusus1 = null;
+        this.teganganRTJurusanKhusus1 = null;
+        this.teganganSTJurusanKhusus1 = null;
+        this.idJurusanKhusus2 = null;
+        this.arusRJurusanKhusus2 = null;
+        this.arusSJurusanKhusus2 = null;
+        this.arusTJurusanKhusus2 = null;
+        this.arusNJurusanKhusus2 = null;
+        this.teganganRNJurusanKhusus2 = null;
+        this.teganganSNJurusanKhusus2 = null;
+        this.teganganTNJurusanKhusus2 = null;
+        this.teganganRSJurusanKhusus2 = null;
+        this.teganganRTJurusanKhusus2 = null;
+        this.teganganSTJurusanKhusus2 = null;
+        this.latitude = null;
+        this.longitude = null;
     }
 
     public String getNoGardu()
@@ -1072,8 +1166,29 @@ public class GarduIndexMeasurementOrm implements Resetable
         this.teganganSTJurusanKhusus2 = teganganSTJurusanKhusus2;
     }
 
+    public Double getLatitude()
+    {
+        return this.latitude;
+    }
+
+    public void setLatitude(Double latitude)
+    {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude()
+    {
+        return this.longitude;
+    }
+
+    public void setLongitude(Double longitude)
+    {
+        this.longitude = longitude;
+    }
+
     @Override public boolean equals(Object o)
     {
+
         if(this == o)
         {
             return true;
@@ -1401,7 +1516,15 @@ public class GarduIndexMeasurementOrm implements Resetable
         {
             return false;
         }
-        return getTeganganSTJurusanKhusus2() != null ? getTeganganSTJurusanKhusus2().equals(that.getTeganganSTJurusanKhusus2()) : that.getTeganganSTJurusanKhusus2() == null;
+        if(getTeganganSTJurusanKhusus2() != null ? !getTeganganSTJurusanKhusus2().equals(that.getTeganganSTJurusanKhusus2()) : that.getTeganganSTJurusanKhusus2() != null)
+        {
+            return false;
+        }
+        if(getLatitude() != null ? !getLatitude().equals(that.getLatitude()) : that.getLatitude() != null)
+        {
+            return false;
+        }
+        return getLongitude() != null ? getLongitude().equals(that.getLongitude()) : that.getLongitude() == null;
 
     }
 
@@ -1487,6 +1610,8 @@ public class GarduIndexMeasurementOrm implements Resetable
         result = 31 * result + (getTeganganRSJurusanKhusus2() != null ? getTeganganRSJurusanKhusus2().hashCode() : 0);
         result = 31 * result + (getTeganganRTJurusanKhusus2() != null ? getTeganganRTJurusanKhusus2().hashCode() : 0);
         result = 31 * result + (getTeganganSTJurusanKhusus2() != null ? getTeganganSTJurusanKhusus2().hashCode() : 0);
+        result = 31 * result + (getLatitude() != null ? getLatitude().hashCode() : 0);
+        result = 31 * result + (getLongitude() != null ? getLongitude().hashCode() : 0);
         return result;
     }
 
@@ -1573,93 +1698,9 @@ public class GarduIndexMeasurementOrm implements Resetable
         sb.append(", teganganRSJurusanKhusus2='").append(teganganRSJurusanKhusus2).append('\'');
         sb.append(", teganganRTJurusanKhusus2='").append(teganganRTJurusanKhusus2).append('\'');
         sb.append(", teganganSTJurusanKhusus2='").append(teganganSTJurusanKhusus2).append('\'');
+        sb.append(", latitude=").append(latitude);
+        sb.append(", longitude=").append(longitude);
         sb.append('}');
         return sb.toString();
-    }
-
-    @Override public void reset()
-    {
-        Timber.d("reset");
-
-        this.noGardu = null;
-        this.petugas1 = null;
-        this.petugas2 = null;
-        this.noKontrak = null;
-        this.arusRUtama = null;
-        this.arusSUtama = null;
-        this.arusTUtama = null;
-        this.arusNUtama = null;
-        this.teganganRNUtama = null;
-        this.teganganSNUtama = null;
-        this.teganganTNUtama = null;
-        this.teganganRSUtama = null;
-        this.teganganRTUtama = null;
-        this.teganganSTUtama = null;
-        this.idJurusanUmum1 = null;
-        this.arusRJurusanUmum1 = null;
-        this.arusSJurusanUmum1 = null;
-        this.arusTJurusanUmum1 = null;
-        this.arusNJurusanUmum1 = null;
-        this.teganganRNJurusanUmum1 = null;
-        this.teganganSNJurusanUmum1 = null;
-        this.teganganTNJurusanUmum1 = null;
-        this.teganganRSJurusanUmum1 = null;
-        this.teganganRTJurusanUmum1 = null;
-        this.teganganSTJurusanUmum1 = null;
-        this.idJurusanUmum2 = null;
-        this.arusRJurusanUmum2 = null;
-        this.arusSJurusanUmum2 = null;
-        this.arusTJurusanUmum2 = null;
-        this.arusNJurusanUmum2 = null;
-        this.teganganRNJurusanUmum2 = null;
-        this.teganganSNJurusanUmum2 = null;
-        this.teganganTNJurusanUmum2 = null;
-        this.teganganRSJurusanUmum2 = null;
-        this.teganganRTJurusanUmum2 = null;
-        this.teganganSTJurusanUmum2 = null;
-        this.idJurusanUmum3 = null;
-        this.arusRJurusanUmum3 = null;
-        this.arusSJurusanUmum3 = null;
-        this.arusTJurusanUmum3 = null;
-        this.arusNJurusanUmum3 = null;
-        this.teganganRNJurusanUmum3 = null;
-        this.teganganSNJurusanUmum3 = null;
-        this.teganganTNJurusanUmum3 = null;
-        this.teganganRSJurusanUmum3 = null;
-        this.teganganRTJurusanUmum3 = null;
-        this.teganganSTJurusanUmum3 = null;
-        this.idJurusanUmum4 = null;
-        this.arusRJurusanUmum4 = null;
-        this.arusSJurusanUmum4 = null;
-        this.arusTJurusanUmum4 = null;
-        this.arusNJurusanUmum4 = null;
-        this.teganganRNJurusanUmum4 = null;
-        this.teganganSNJurusanUmum4 = null;
-        this.teganganTNJurusanUmum4 = null;
-        this.teganganRSJurusanUmum4 = null;
-        this.teganganRTJurusanUmum4 = null;
-        this.teganganSTJurusanUmum4 = null;
-        this.idJurusanKhusus1 = null;
-        this.arusRJurusanKhusus1 = null;
-        this.arusSJurusanKhusus1 = null;
-        this.arusTJurusanKhusus1 = null;
-        this.arusNJurusanKhusus1 = null;
-        this.teganganRNJurusanKhusus1 = null;
-        this.teganganSNJurusanKhusus1 = null;
-        this.teganganTNJurusanKhusus1 = null;
-        this.teganganRSJurusanKhusus1 = null;
-        this.teganganRTJurusanKhusus1 = null;
-        this.teganganSTJurusanKhusus1 = null;
-        this.idJurusanKhusus2 = null;
-        this.arusRJurusanKhusus2 = null;
-        this.arusSJurusanKhusus2 = null;
-        this.arusTJurusanKhusus2 = null;
-        this.arusNJurusanKhusus2 = null;
-        this.teganganRNJurusanKhusus2 = null;
-        this.teganganSNJurusanKhusus2 = null;
-        this.teganganTNJurusanKhusus2 = null;
-        this.teganganRSJurusanKhusus2 = null;
-        this.teganganRTJurusanKhusus2 = null;
-        this.teganganSTJurusanKhusus2 = null;
     }
 }
