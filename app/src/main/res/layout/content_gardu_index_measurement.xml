@@ -92,7 +92,7 @@
                             android:name="com.google.android.gms.maps.SupportMapFragment"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            tools:context="app.freelancer.syafiqq.gardureporter.controller.GarduIndexInsert" />
+                            tools:context="app.freelancer.syafiqq.gardureporter.controller.GarduIndexMeasurement" />
                 </LinearLayout>
             </LinearLayout>
 
