@@ -62,6 +62,7 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
     {
         Timber.d("Constructor");
         this.availability = new BooleanObserver(false);
+        this.location = new ObservableLocation(null);
         this.isAlreadyRequested = false;
         this.activity = activity;
     }
@@ -157,7 +158,7 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
         this.locationSettingsRequest = builder.build();
     }
 
-    public void requestLocationUpdates(final LocationListener listener)
+    public void requestLocationUpdates()
     {
         Timber.d("requestLocationUpdates");
 
@@ -184,7 +185,7 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
                                 {
                                     return;
                                 }
-                                LocationServices.FusedLocationApi.requestLocationUpdates(GPSApi.this.apiClient, GPSApi.this.locationRequest, listener);
+                                LocationServices.FusedLocationApi.requestLocationUpdates(GPSApi.this.apiClient, GPSApi.this.locationRequest, GPSApi.this);
                                 GPSApi.this.isAlreadyRequested = true;
                                 break;
                             }
@@ -220,7 +221,7 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
         }
     }
 
-    public void removeLocationUpdates(LocationListener listener)
+    public void removeLocationUpdates()
     {
         Timber.d("removeLocationUpdates");
 
@@ -228,7 +229,7 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
         {
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     this.apiClient,
-                    listener
+                    this
             ).setResultCallback(new ResultCallback<Status>()
             {
                 @Override
@@ -246,6 +247,8 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
 
     private void resetGPS()
     {
+        Timber.d("resetGPS");
+
         @NotNull final Bundle bundle = new Bundle();
         this.locationManager.sendExtraCommand(LocationManager.GPS_PROVIDER, "delete_aiding_data", null);
         this.locationManager.sendExtraCommand("gps", "force_xtra_injection", bundle);
@@ -254,17 +257,19 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
 
     public void destroyService()
     {
+        Timber.d("destroyService");
+
         this.apiClient.disconnect();
     }
 
-    private boolean checkPermissions()
+    public boolean checkPermissions()
     {
         Timber.d("checkPermissions");
 
         return (ActivityCompat.checkSelfPermission(GPSApi.this.activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(GPSApi.this.activity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
     }
 
-    private void requestPermissions(int rootID)
+    public void requestPermissions(int rootID)
     {
         Timber.d("requestPermissions");
 
@@ -306,41 +311,57 @@ public class GPSApi implements GoogleApiClient.ConnectionCallbacks, GoogleApiCli
 
     public BooleanObserver getAvailability()
     {
+        Timber.d("getAvailability");
+
         return this.availability;
     }
 
     public void setAvailability(BooleanObserver availability)
     {
+        Timber.d("setAvailability");
+
         this.availability = availability;
     }
 
-    public ObservableLocation getLocation()
+    public Location getLocation()
     {
-        return this.location;
+        Timber.d("getLocation");
+
+        return this.location.getLocation();
     }
 
-    public void setLocation(ObservableLocation location)
+    public void setLocation(Location location)
     {
-        this.location = location;
+        Timber.d("setLocation");
+
+        this.location.setLocation(location);
     }
 
     public boolean isAlreadyRequested()
     {
+        Timber.d("isAlreadyRequested");
+
         return this.isAlreadyRequested;
     }
 
     public void setAlreadyRequested(boolean alreadyRequested)
     {
+        Timber.d("setAlreadyRequested");
+
         this.isAlreadyRequested = alreadyRequested;
     }
 
     public void addObserver(Observer o)
     {
+        Timber.d("addObserver");
+
         this.location.addObserver(o);
     }
 
     public void deleteObserver(Observer o)
     {
+        Timber.d("deleteObserver");
+
         this.location.deleteObserver(o);
     }
 }
