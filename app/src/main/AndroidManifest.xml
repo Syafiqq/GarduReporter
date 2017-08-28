@@ -4,6 +4,7 @@
         package="app.freelancer.syafiqq.gardureporter">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -11,11 +12,21 @@
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
+            android:name="MyApplication"
             android:label="@string/application_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:replace="android:label">
+
+        <meta-data
+                android:name="com.google.android.gms.version"
+                android:value="@integer/google_play_services_version" />
+
+        <meta-data
+                android:name="com.google.android.geo.API_KEY"
+                android:value="@string/google_maps_key" />
+
         <activity
                 android:name=".controller.GarduIndexInsert"
                 android:label="@string/activity_dashboard_title"

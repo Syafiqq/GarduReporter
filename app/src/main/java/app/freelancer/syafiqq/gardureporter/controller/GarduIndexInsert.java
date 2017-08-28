@@ -2,14 +2,11 @@ package app.freelancer.syafiqq.gardureporter.controller;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -47,7 +45,6 @@ import app.freelancer.syafiqq.gardureporter.model.orm.GarduIndukOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.GarduPenyulangOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.JenisGarduOrm;
 import app.freelancer.syafiqq.gardureporter.model.orm.LocationOrm;
-import com.android.volley.RequestQueue;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -58,23 +55,30 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.toptoche.searchablespinnerlibrary.SearchableSpinner;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import timber.log.Timber;
 
-public class GarduIndexInsert extends AppCompatActivity implements View.OnClickListener, LocationListener
+public class GarduIndexInsert extends AppCompatActivity implements View.OnClickListener, LocationListener, OnMapReadyCallback
 {
     private static final String TAG = GarduIndexInsert.class.getSimpleName();
 
     // Used in checking for runtime permissions.
     private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 0x22;
-    private static final int SECONDS_DELAYED = 30;
+    private static final int SECONDS_DELAYED = 45;
     private static final int REQUEST_CHECK_SETTINGS = 0x01;
 
     private LocationService service;
@@ -99,7 +103,6 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
 
     //ORM
     private GarduIndexOrm report;
-    private RequestQueue queue;
 
     //Observer
     private Observer accuracyObserver;
@@ -108,6 +111,10 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
     private Runnable asyncOverrideLocationRequest;
     private boolean isSubmitRequested;
 
+    private int countRequest;
+    private GoogleMap map;
+    private Marker marker;
+    private LinearLayout mapContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -152,19 +159,27 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         this.tap = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_tap);
         this.jurusan = (TextInputEditText) findViewById(R.id.content_dashboard_edittext_jurusan);
         this.submit = (Button) findViewById(R.id.content_dashboard_button_submit);
+        this.mapContainer = (LinearLayout) findViewById(R.id.content_dashboard_linearlayout_map_container);
+        final SupportMapFragment mapFragment = (SupportMapFragment) super.getSupportFragmentManager().findFragmentById(R.id.content_dashboard_fragment_map);
 
         this.progress = (ProgressBar) findViewById(R.id.content_dashboard_progress_bar_submit);
         final ImageButton garduIndukSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_induk_refresh);
         final ImageButton garduPenyulangSync = (ImageButton) findViewById(R.id.content_dashboard_imagebutton_penyulang_refresh);
 
+
+        mapFragment.getMapAsync(this);
+
         this.isSubmitRequested = false;
+        this.countRequest = 0;
 
         this.updateAccuracy(this.oLocation.getLocation());
+
         this.accuracyObserver = new Observer()
         {
             @Override public void update(Observable observable, Object o)
             {
                 GarduIndexInsert.this.updateAccuracy((Location) o);
+                GarduIndexInsert.this.updateMap(GarduIndexInsert.this.map, (Location) o);
             }
         };
         this.serviceObserver = new Observer()
@@ -290,6 +305,38 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         });
         garduIndukSync.callOnClick();
         garduPenyulangSync.callOnClick();
+        this.location.setChecked(false);
+    }
+
+    private void updateMap(GoogleMap map, Location o)
+    {
+        if(map != null)
+        {
+            if(o == null)
+            {
+                if(this.marker != null)
+                {
+                    this.marker.setVisible(false);
+                }
+            }
+            else
+            {
+                LatLng latLng = new LatLng(o.getLatitude(), o.getLongitude());
+
+                if(this.marker != null)
+                {
+                    this.marker.setPosition(latLng);
+                }
+                else
+                {
+                    this.marker = map.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                }
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17.0f));
+                this.marker.setVisible(true);
+            }
+        }
     }
 
     @Override protected void onResume()
@@ -389,7 +436,7 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
     {
         Timber.d("updateAccuracy");
 
-        this.location.setText(String.format(Locale.getDefault(), super.getResources().getString(R.string.content_dashboard_accuracy_label), location == null ? Float.POSITIVE_INFINITY : location.getAccuracy()));
+        this.location.setText(super.getResources().getString(R.string.content_dashboard_accuracy_label));
     }
 
     private void onLocationRequestSwitchedOn()
@@ -404,9 +451,12 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         {
             if(!this.service.isAlreadyRequested)
             {
+                this.countRequest = 0;
+                this.oLocation.setLocation(null);
                 this.service.requestLocationUpdates(this);
             }
         }
+        this.mapContainer.setVisibility(View.VISIBLE);
     }
 
     private void onLocationRequestSwitchedOff()
@@ -417,6 +467,8 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         this.location.setChecked(false);
         this.service.removeLocationUpdates(GarduIndexInsert.this);
         this.oLocation.setLocation(null);
+        this.updateMap(this.map, null);
+        this.mapContainer.setVisibility(View.GONE);
     }
 
 
@@ -585,22 +637,17 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
 
         if(location != null)
         {
-            Timber.d("Location [%.14g,%.14g] %s", location.getLatitude(), location.getLongitude(), location.getAccuracy());
-            if(location.hasAccuracy())
-            {
-                if((this.oLocation.getLocation() == null ? Float.MAX_VALUE : this.oLocation.getLocation().getAccuracy()) > location.getAccuracy())
-                {
-                    this.oLocation.setLocation(location);
-                }
+            Timber.d("Location [%b] [%.14g,%.14g] [%s]", this.oLocation.getLocation() != null, location.getLatitude(), location.getLongitude(), this.countRequest);
+            this.oLocation.setLocation(location);
 
-                if(this.isSubmitRequested)
+            if(this.isSubmitRequested)
+            {
+                if(this.countRequest >= LocationService.COUNT_REQUEST_THRESHOLD)
                 {
-                    if(this.oLocation.getLocation().getAccuracy() <= LocationService.DISTANCE_ERROR_THRESHOLD_IN_METERS)
-                    {
-                        this.prepareSubmit(this.oLocation.getLocation());
-                    }
+                    this.prepareSubmit(this.oLocation.getLocation());
                 }
             }
+            ++this.countRequest;
         }
     }
 
@@ -678,19 +725,30 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
         this.jurusan.getText().clear();
     }
 
+    @Override public void onMapReady(GoogleMap googleMap)
+    {
+        //LatLng sydney = new LatLng(-33.852, 151.211);
+        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        //googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        googleMap.setMinZoomPreference(17.0f);
+        googleMap.setMaxZoomPreference(17.0f);
+        googleMap.getUiSettings().setScrollGesturesEnabled(false);
+        this.map = googleMap;
+    }
+
     private final class LocationService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
     {
         /**
          * The desired interval for oLocation updates. Inexact. Updates may be more or less frequent.
          */
-        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7500;
+        private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
         /**
          * The fastest rate for active oLocation updates. Updates will never be more frequent
          * than this value.
          */
-        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
+        private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 3500;
 
-        private static final float DISTANCE_ERROR_THRESHOLD_IN_METERS = 20;
+        private static final float COUNT_REQUEST_THRESHOLD = 7;
         public BooleanObserver availability;
         /**
          * Provides the entry point to Google Play services.
@@ -894,23 +952,6 @@ public class GarduIndexInsert extends AppCompatActivity implements View.OnClickL
             Toast.makeText(GarduIndexInsert.this, GarduIndexInsert.super.getResources().getString(R.string.error_connect_to_location_api), Toast.LENGTH_SHORT).show();
 
             this.availability.setBool(false);
-        }
-
-        public boolean isGPSEnabled(Context ctx)
-        {
-            @NotNull
-            final LocationManager locationManager = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
-            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        }
-
-        public boolean isInternetConnected(Context ctx)
-        {
-            @NotNull
-            final ConnectivityManager manager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            @Nullable
-            final NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
-            return activeNetwork != null && (activeNetwork.getState() == NetworkInfo.State.CONNECTED || activeNetwork.getState() == NetworkInfo.State.CONNECTING);
         }
 
         public void destroyService()

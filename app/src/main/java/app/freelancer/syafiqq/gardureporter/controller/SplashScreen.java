@@ -28,21 +28,6 @@ public class SplashScreen extends AppCompatActivity
         new TokenValidationTask().execute();
     }
 
-    @Override protected void onStart()
-    {
-        super.onStart();
-        this.initializeTimber();
-    }
-
-    private void initializeTimber()
-    {
-        if(BuildConfig.DEBUG)
-        {
-            Timber.plant(new Timber.DebugTree());
-        }
-        Timber.d("initializeTimber");
-    }
-
     private class TokenValidationTask extends AsyncTask<Void, Void, Void> implements TokenDao.TokenExistenceListener, TokenDao.TokenValidityListener
     {
         private CountDownLatch checkLatch;

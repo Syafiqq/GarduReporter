@@ -15,6 +15,7 @@ android {
         jackOptions {
             enabled true
         }
+        resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
     }
     buildTypes {
         release {
@@ -49,7 +50,9 @@ dependencies {
     compile 'org.jetbrains:annotations:15.0'
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    compile 'org.bouncycastle:bcprov-jdk15on:1.57'
+    compile 'org.bouncycastle:bcprov-jdk16:1.46'
+    compile 'com.faendir:acra:4.10.0'
+    compile 'com.google.android.gms:play-services-maps:11.0.4'
     compile project(':searchablespinnerlibrary')
     compile project(':accordionlibrary')
     testCompile 'junit:junit:4.12'

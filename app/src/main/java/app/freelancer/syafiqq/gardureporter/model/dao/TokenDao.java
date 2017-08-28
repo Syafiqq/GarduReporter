@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.controller.SplashScreen;
 import app.freelancer.syafiqq.gardureporter.model.orm.TokenOrm;
@@ -183,6 +184,7 @@ public class TokenDao
         protected void onPostExecute(Void param)
         {
             @NotNull Intent intent = new Intent(this.context, SplashScreen.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             this.context.startActivity(intent);
         }
     }

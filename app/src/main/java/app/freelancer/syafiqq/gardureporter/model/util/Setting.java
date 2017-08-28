@@ -9,6 +9,7 @@ package app.freelancer.syafiqq.gardureporter.model.util;
  */
 
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import app.freelancer.syafiqq.gardureporter.R;
 import app.freelancer.syafiqq.gardureporter.model.dao.TokenDao;
@@ -78,8 +79,15 @@ public class Setting
                 sslContext = SSLContext.getInstance(CLIENT_AGREEMENT);
                 TrustManagerFactory trustManager = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 KeyStore tks = KeyStore.getInstance(CLIENT_TRUST_KEYSTORE);
-                InputStream is = context.getResources().openRawResource(R.raw.gardureporter_000webhostapp_com_bks);
-                //noinspection TryFinallyCanBeTryWithResources
+                InputStream is;
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                {
+                    is = context.getResources().openRawResource(R.raw.freelancer_gardu_reporter_app_bks);
+                }
+                else
+                {
+                    is = context.getResources().openRawResource(R.raw.freelancer_gardu_reporter_app_v1_bks);
+                }
                 try
                 {
                     tks.load(is, CLIENT_TRUST_PASSWORD.toCharArray());
