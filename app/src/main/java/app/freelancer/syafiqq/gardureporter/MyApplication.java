@@ -2,6 +2,7 @@ package app.freelancer.syafiqq.gardureporter;
 
 import android.app.Application;
 import android.content.Context;
+import org.acra.ACRA;
 import org.acra.ReportField;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
@@ -27,7 +28,7 @@ public class MyApplication extends Application
         super.attachBaseContext(base);
 
         this.initializeTimber();
-        //ACRA.init(this);
+        ACRA.init(this);
     }
 
     private void initializeTimber()
