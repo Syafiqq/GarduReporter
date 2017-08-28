@@ -82,11 +82,11 @@ public class Setting
                 InputStream is;
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
                 {
-                    is = context.getResources().openRawResource(R.raw.freelancer_gardu_reporter_app_bks);
+                    is = context.getResources().openRawResource(R.raw.gardureporter_000webhostapp_com_bks);
                 }
                 else
                 {
-                    is = context.getResources().openRawResource(R.raw.freelancer_gardu_reporter_app_v1_bks);
+                    is = context.getResources().openRawResource(R.raw.gardureporter_000webhostapp_com_bks);
                 }
                 try
                 {
