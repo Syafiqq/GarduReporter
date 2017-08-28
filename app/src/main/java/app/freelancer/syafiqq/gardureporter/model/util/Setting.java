@@ -86,7 +86,7 @@ public class Setting
                 }
                 else
                 {
-                    is = context.getResources().openRawResource(R.raw.gardureporter_000webhostapp_com_bks);
+                    is = context.getResources().openRawResource(R.raw.gardureporter_000webhostapp_com_v1_bks);
                 }
                 try
                 {
